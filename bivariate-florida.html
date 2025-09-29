@@ -363,6 +363,19 @@
                     </div>
                 </div>
 
+                <div class="control-section" id="exportSection" style="display: none;">
+                    <h3>📤 Export Data</h3>
+                    <button class="btn btn-secondary" onclick="exportForChoropleth()" style="margin-bottom: 0.5rem;">
+                        Export for Choropleth Mapper
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportAnalysis()" style="margin-bottom: 0.5rem;">
+                        Export Analysis Report
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportProcessedData()">
+                        Export Processed CSV
+                    </button>
+                </div>
+
                 <div class="control-section" id="dataPreview" style="display: none;">
                     <h3>📋 Data Preview</h3>
                     <div style="max-height: 200px; overflow-y: auto;">
@@ -883,6 +896,149 @@
 12133,Washington,567,345,2345,35567,57.2,66.9,6.8`;
             
             parseCSV(exampleCSV);
+        }
+
+        // Export functions
+        function exportForChoropleth() {
+            if (!csvData.length) return;
+            
+            const xVar = document.getElementById('xVariable').value;
+            const yVar = document.getElementById('yVariable').value;
+            
+            // Create a new CSV with selected variable and computed bivariate scores
+            const xValues = csvData.map(d => parseFloat(d[xVar])).filter(v => !isNaN(v));
+            const yValues = csvData.map(d => parseFloat(d[yVar])).filter(v => !isNaN(v));
+            
+            const xMin = Math.min(...xValues);
+            const xMax = Math.max(...xValues);
+            const yMin = Math.min(...yValues);
+            const yMax = Math.max(...yValues);
+            
+            let output = `FIPS,County,${xVar},${yVar},Bivariate_Score,X_Percentile,Y_Percentile\n`;
+            
+            csvData.forEach(row => {
+                const xVal = parseFloat(row[xVar]);
+                const yVal = parseFloat(row[yVar]);
+                
+                if (!isNaN(xVal) && !isNaN(yVal)) {
+                    const xPercentile = ((xVal - xMin) / (xMax - xMin) * 100).toFixed(1);
+                    const yPercentile = ((yVal - yMin) / (yMax - yMin) * 100).toFixed(1);
+                    const bivariateScore = (parseFloat(xPercentile) + parseFloat(yPercentile)) / 2;
+                    
+                    output += `${row.FIPS || row.fips},${row.County || row.county},${xVal},${yVal},${bivariateScore.toFixed(1)},${xPercentile},${yPercentile}\n`;
+                }
+            });
+            
+            downloadFile(output, 'choropleth_data.csv', 'text/csv');
+        }
+        
+        function exportAnalysis() {
+            if (!csvData.length) return;
+            
+            const xVar = document.getElementById('xVariable').value;
+            const yVar = document.getElementById('yVariable').value;
+            const correlation = document.getElementById('correlationStat').textContent;
+            
+            const xValues = csvData.map(d => parseFloat(d[xVar])).filter(v => !isNaN(v));
+            const yValues = csvData.map(d => parseFloat(d[yVar])).filter(v => !isNaN(v));
+            
+            let report = `Bivariate Analysis Report\n`;
+            report += `Generated: ${new Date().toLocaleString()}\n\n`;
+            report += `Variables Analyzed:\n`;
+            report += `X-Axis: ${xVar}\n`;
+            report += `Y-Axis: ${yVar}\n\n`;
+            
+            report += `Statistics:\n`;
+            report += `Counties: ${csvData.length}\n`;
+            report += `Correlation: ${correlation}\n\n`;
+            
+            report += `${xVar} Statistics:\n`;
+            report += `  Min: ${Math.min(...xValues).toFixed(2)}\n`;
+            report += `  Max: ${Math.max(...xValues).toFixed(2)}\n`;
+            report += `  Mean: ${(xValues.reduce((a,b) => a+b, 0) / xValues.length).toFixed(2)}\n`;
+            report += `  Median: ${median(xValues).toFixed(2)}\n\n`;
+            
+            report += `${yVar} Statistics:\n`;
+            report += `  Min: ${Math.min(...yValues).toFixed(2)}\n`;
+            report += `  Max: ${Math.max(...yValues).toFixed(2)}\n`;
+            report += `  Mean: ${(yValues.reduce((a,b) => a+b, 0) / yValues.length).toFixed(2)}\n`;
+            report += `  Median: ${median(yValues).toFixed(2)}\n\n`;
+            
+            // Find outliers
+            report += `Notable Counties:\n`;
+            
+            // High-High quadrant
+            const highHigh = csvData.filter(row => {
+                const x = parseFloat(row[xVar]);
+                const y = parseFloat(row[yVar]);
+                return x > median(xValues) && y > median(yValues);
+            });
+            report += `  High ${xVar} + High ${yVar}: ${highHigh.slice(0,3).map(r => r.County || r.county).join(', ')}\n`;
+            
+            // Low-Low quadrant
+            const lowLow = csvData.filter(row => {
+                const x = parseFloat(row[xVar]);
+                const y = parseFloat(row[yVar]);
+                return x < median(xValues) && y < median(yValues);
+            });
+            report += `  Low ${xVar} + Low ${yVar}: ${lowLow.slice(0,3).map(r => r.County || r.county).join(', ')}\n`;
+            
+            downloadFile(report, 'bivariate_analysis.txt', 'text/plain');
+        }
+        
+        function exportProcessedData() {
+            if (!csvData.length) return;
+            
+            // Export the full dataset with all calculations
+            const headers = Object.keys(csvData[0]);
+            let output = headers.join(',') + '\n';
+            
+            csvData.forEach(row => {
+                output += headers.map(h => row[h]).join(',') + '\n';
+            });
+            
+            downloadFile(output, 'processed_data.csv', 'text/csv');
+        }
+        
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type: type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        function median(values) {
+            const sorted = [...values].sort((a, b) => a - b);
+            const mid = Math.floor(sorted.length / 2);
+            return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+        }
+
+        // Update variable selects to show export section
+        function updateVariableSelects() {
+            const xSelect = document.getElementById('xVariable');
+            const ySelect = document.getElementById('yVariable');
+            
+            xSelect.innerHTML = '';
+            ySelect.innerHTML = '';
+            
+            variables.forEach((variable, index) => {
+                xSelect.innerHTML += `<option value="${variable}">${variable}</option>`;
+                ySelect.innerHTML += `<option value="${variable}">${variable}</option>`;
+            });
+            
+            // Select different defaults
+            if (variables.length > 1) {
+                ySelect.selectedIndex = 1;
+            }
+            
+            document.getElementById('variableSection').style.display = 'block';
+            document.getElementById('statsSection').style.display = 'block';
+            document.getElementById('exportSection').style.display = 'block';
         }
 
         // Initialize on load
