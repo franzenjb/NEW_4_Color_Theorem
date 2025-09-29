@@ -1,63 +1,276 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Four-Color Studio</title>
-    <link rel="stylesheet" href="./styles.css">
-  </head>
-  <body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Four Color Theorem | Professional Visualization Tool</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
     <header class="app-header">
-      <div class="brand">Four‑Color Studio</div>
-      <div class="subtitle">Elegant tools for graphs and maps</div>
+        <div class="header-content">
+            <h1>Four Color Theorem</h1>
+            <p class="tagline">Professional Map Coloring & Graph Theory Visualization</p>
+        </div>
     </header>
 
-    <section class="toolbar" role="region" aria-label="Controls">
-      <div class="tool-group">
-        <label for="modeSelect">Mode</label>
-        <select id="modeSelect">
-          <option value="graph">Graph</option>
-          <option value="regions">Regions</option>
-        </select>
-      </div>
+    <nav class="primary-nav" role="navigation" aria-label="Main navigation">
+        <button class="nav-tab active" data-panel="workspace">Workspace</button>
+        <button class="nav-tab" data-panel="theory">Theory & History</button>
+        <button class="nav-tab" data-panel="algorithms">Algorithms</button>
+        <button class="nav-tab" data-panel="data">Data Import</button>
+    </nav>
 
-      <div class="tool-group">
-        <label for="paletteSelect">Palette</label>
-        <select id="paletteSelect"></select>
-        <div id="swatches" class="swatches" aria-label="Color swatches"></div>
-      </div>
+    <main class="app-container">
+        <!-- Workspace Panel -->
+        <section id="workspace-panel" class="panel active">
+            <div class="workspace-layout">
+                <aside class="control-sidebar">
+                    <div class="control-section">
+                        <h3>Color Palette</h3>
+                        <div class="palette-grid" id="paletteGrid">
+                            <button class="color-swatch active" data-color="0" style="background: #E63946" aria-label="Red"></button>
+                            <button class="color-swatch" data-color="1" style="background: #457B9D" aria-label="Blue"></button>
+                            <button class="color-swatch" data-color="2" style="background: #F1C40F" aria-label="Yellow"></button>
+                            <button class="color-swatch" data-color="3" style="background: #27AE60" aria-label="Green"></button>
+                        </div>
+                    </div>
 
-      <div class="tool-group">
-        <button id="eyedropperBtn" title="Eyedropper">Eyedropper</button>
-      </div>
+                    <div class="control-section">
+                        <h3>Coloring Algorithm</h3>
+                        <select id="algorithmSelect" class="control-select">
+                            <option value="dsatur">DSATUR (Recommended)</option>
+                            <option value="greedy">Greedy</option>
+                            <option value="welsh-powell">Welsh-Powell</option>
+                            <option value="backtracking">Backtracking (Exact)</option>
+                        </select>
+                        <button id="autoColorBtn" class="btn btn-primary">
+                            Auto-Color Graph
+                        </button>
+                    </div>
 
-      <div class="tool-group">
-        <button id="autoColorBtn" title="Auto-color">Auto‑color</button>
-      </div>
+                    <div class="control-section">
+                        <h3>State Management</h3>
+                        <div class="button-group">
+                            <button id="undoBtn" class="btn" aria-label="Undo">
+                                <span>↶ Undo</span>
+                            </button>
+                            <button id="redoBtn" class="btn" aria-label="Redo">
+                                <span>↷ Redo</span>
+                            </button>
+                        </div>
+                        <button id="resetBtn" class="btn btn-secondary">
+                            Reset Colors
+                        </button>
+                    </div>
 
-      <div class="tool-group">
-        <button id="undoBtn" title="Undo">Undo</button>
-        <button id="redoBtn" title="Redo">Redo</button>
-        <button id="resetBtn" class="danger" title="Reset">Reset</button>
-      </div>
+                    <div class="control-section">
+                        <h3>Export Options</h3>
+                        <button id="exportSvgBtn" class="btn">Export as SVG</button>
+                        <button id="exportPngBtn" class="btn">Export as PNG</button>
+                    </div>
 
-      <div class="tool-group">
-        <button id="exportSVGBtn" title="Export SVG">Export SVG</button>
-        <button id="exportPNGBtn" title="Export PNG">Export PNG</button>
-      </div>
-    </section>
+                    <div class="control-section statistics">
+                        <h3>Graph Statistics</h3>
+                        <dl id="statsDisplay">
+                            <dt>Nodes:</dt><dd id="statNodes">-</dd>
+                            <dt>Edges:</dt><dd id="statEdges">-</dd>
+                            <dt>Chromatic №:</dt><dd id="statChromatic">-</dd>
+                            <dt>Valid:</dt><dd id="statValid">-</dd>
+                        </dl>
+                    </div>
+                </aside>
 
-    <main class="workbench">
-      <div id="graphCanvasContainer" class="canvas" aria-label="Graph canvas"></div>
-      <div id="regionCanvasContainer" class="canvas" aria-label="Regions canvas" hidden></div>
+                <div class="canvas-container">
+                    <div id="mapCanvas" class="map-canvas">
+                        <svg id="mainSvg" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet">
+                            <!-- Dynamic content rendered here -->
+                        </svg>
+                    </div>
+                    <div class="canvas-status" id="canvasStatus">
+                        Ready. Click regions to color them.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Theory & History Panel -->
+        <section id="theory-panel" class="panel">
+            <div class="content-container">
+                <article class="theory-content">
+                    <h2>The Four Color Theorem: A Mathematical Controversy</h2>
+                    
+                    <div class="historical-note">
+                        <h3>The Doodler's Problem That Sparked a Revolution</h3>
+                        <p>In 1852, mathematician Francis Guthrie posed a deceptively simple question while coloring the counties of England: <em>What is the minimum number of colors needed to color any map so that no adjacent regions share the same color?</em></p>
+                        
+                        <p>This innocent query would spark one of mathematics' most enduring controversies, culminating in 1976 with the first major theorem proven using computer assistance—a milestone that fundamentally challenged our understanding of mathematical proof.</p>
+                    </div>
+
+                    <div class="theorem-statement">
+                        <h3>Formal Statement</h3>
+                        <p><strong>The Four Color Theorem:</strong> Every planar graph is 4-colorable. That is, the vertices of any planar graph can be colored using at most four colors such that no two adjacent vertices share the same color.</p>
+                    </div>
+
+                    <div class="historical-timeline">
+                        <h3>Historical Timeline</h3>
+                        <dl class="timeline">
+                            <dt>1852</dt>
+                            <dd>Francis Guthrie conjectures four colors suffice while coloring English counties</dd>
+                            
+                            <dt>1879</dt>
+                            <dd>Alfred Kempe publishes first "proof"—later found flawed after 11 years</dd>
+                            
+                            <dt>1890</dt>
+                            <dd>Percy John Heawood finds error in Kempe's proof, proves five colors always work</dd>
+                            
+                            <dt>1976</dt>
+                            <dd>Kenneth Appel and Wolfgang Haken achieve first computer-assisted proof, checking all possible configurations</dd>
+                            
+                            <dt>1996</dt>
+                            <dd>Robertson, Sanders, Seymour, and Thomas simplify proof to 633 reducible configurations</dd>
+                            
+                            <dt>2005</dt>
+                            <dd>Georges Gonthier creates formal proof verified by Coq theorem prover</dd>
+                        </dl>
+                    </div>
+
+                    <div class="computational-complexity">
+                        <h3>Computational Complexity Insights</h3>
+                        <p>The Four Color Theorem reveals fascinating complexity patterns:</p>
+                        <ul>
+                            <li><strong>2-coloring:</strong> Linear time, approximately 1 hour by hand</li>
+                            <li><strong>3-coloring:</strong> NP-complete, computationally intractable</li>
+                            <li><strong>4-coloring:</strong> Always possible for planar graphs, solvable in about 1 second</li>
+                        </ul>
+                        <p>This counterintuitive progression—where 3-coloring is harder than 4-coloring—demonstrates the deep mathematical structure underlying the theorem.</p>
+                    </div>
+
+                    <div class="philosophical-implications">
+                        <h3>The Proof Controversy</h3>
+                        <p>The 1976 computer-assisted proof sparked intense philosophical debate: Does a proof that cannot be verified by human inspection truly "count" as mathematical proof? While the theorem is now universally accepted, mathematicians continue seeking a more "illuminating" human-comprehensible proof that reveals <em>why</em> four colors suffice, not merely <em>that</em> they do.</p>
+                    </div>
+
+                    <div class="applications">
+                        <h3>Practical Applications</h3>
+                        <ul>
+                            <li><strong>Cartography:</strong> Efficient map coloring for political and thematic maps</li>
+                            <li><strong>Frequency Assignment:</strong> Mobile tower frequency allocation to avoid interference</li>
+                            <li><strong>Register Allocation:</strong> Compiler optimization in computer science</li>
+                            <li><strong>Scheduling:</strong> Conflict-free scheduling in operations research</li>
+                            <li><strong>Circuit Design:</strong> VLSI circuit layout and testing</li>
+                        </ul>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- Algorithms Panel -->
+        <section id="algorithms-panel" class="panel">
+            <div class="content-container">
+                <h2>Coloring Algorithms</h2>
+                
+                <div class="algorithm-cards">
+                    <div class="algorithm-card">
+                        <h3>DSATUR Algorithm</h3>
+                        <p class="algorithm-meta">Heuristic • O(n²) • Recommended</p>
+                        <p>Selects vertices based on saturation degree—the number of different colors in their neighborhood. Consistently produces near-optimal colorings for most graphs.</p>
+                        <ul>
+                            <li>Dynamic vertex selection</li>
+                            <li>Excellent performance on sparse graphs</li>
+                            <li>Typical chromatic number: optimal or +1</li>
+                        </ul>
+                    </div>
+
+                    <div class="algorithm-card">
+                        <h3>Welsh-Powell Algorithm</h3>
+                        <p class="algorithm-meta">Heuristic • O(n² log n)</p>
+                        <p>Orders vertices by decreasing degree, then colors greedily. Simple and fast, though less optimal than DSATUR.</p>
+                        <ul>
+                            <li>Static vertex ordering</li>
+                            <li>Good for dense graphs</li>
+                            <li>Guaranteed upper bound: Δ + 1 colors</li>
+                        </ul>
+                    </div>
+
+                    <div class="algorithm-card">
+                        <h3>Greedy Algorithm</h3>
+                        <p class="algorithm-meta">Heuristic • O(n + m)</p>
+                        <p>Colors vertices in arbitrary order using the smallest available color. Fastest but least optimal.</p>
+                        <ul>
+                            <li>Linear time complexity</li>
+                            <li>Simple implementation</li>
+                            <li>Quality depends on vertex ordering</li>
+                        </ul>
+                    </div>
+
+                    <div class="algorithm-card">
+                        <h3>Backtracking Algorithm</h3>
+                        <p class="algorithm-meta">Exact • O(k^n) worst case</p>
+                        <p>Exhaustive search with pruning to find the chromatic number. Guarantees optimal coloring but may be slow for large graphs.</p>
+                        <ul>
+                            <li>Finds exact chromatic number</li>
+                            <li>Exponential worst-case time</li>
+                            <li>Best for small graphs (< 50 nodes)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Data Import Panel -->
+        <section id="data-panel" class="panel">
+            <div class="content-container">
+                <h2>Data Import</h2>
+                
+                <div class="import-section">
+                    <h3>Supported Formats</h3>
+                    <div class="format-cards">
+                        <div class="format-card">
+                            <h4>GeoJSON</h4>
+                            <p>Geographic data with region boundaries</p>
+                            <code>FeatureCollection with Polygon/MultiPolygon geometries</code>
+                        </div>
+                        <div class="format-card">
+                            <h4>Graph JSON</h4>
+                            <p>Node and edge definitions</p>
+                            <code>{"nodes": [...], "edges": [...]}</code>
+                        </div>
+                        <div class="format-card">
+                            <h4>CSV Adjacency</h4>
+                            <p>Adjacency matrix or edge list</p>
+                            <code>source,target,weight (optional)</code>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="import-controls">
+                    <div class="file-upload-area" id="uploadArea">
+                        <input type="file" id="fileInput" accept=".json,.geojson,.csv" hidden>
+                        <p>Drag and drop files here or</p>
+                        <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                            Browse Files
+                        </button>
+                    </div>
+                </div>
+
+                <div class="example-data">
+                    <h3>Load Example Data</h3>
+                    <div class="example-buttons">
+                        <button class="btn" id="loadUSStates">US States Map</button>
+                        <button class="btn" id="loadPetersenGraph">Petersen Graph</button>
+                        <button class="btn" id="loadPlanarK5">Planar K5-e</button>
+                        <button class="btn" id="loadEuropeMap">Europe Regions</button>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <footer class="statusbar" role="status" aria-live="polite">
-      <span id="statusText">Ready.</span>
+    <footer class="app-footer">
+        <p>Four Color Theorem Visualization Tool • Based on Appel-Haken (1976) and subsequent refinements</p>
     </footer>
 
-    <script type="module" src="./app.js"></script>
-  </body>
-  </html>
-
-
+    <script type="module" src="src/app.js"></script>
+</body>
+</html>
