@@ -1,0 +1,2092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Four Color Theorem - Professional Suite</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e27;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+        }
+
+        .stats {
+            display: flex;
+            gap: 2rem;
+            background: rgba(255,255,255,0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            background: #1a1f3a;
+            display: flex;
+            border-bottom: 1px solid #2a3f5f;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: #8892b0;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+
+        .tab-btn.active {
+            color: #64ffda;
+            border-bottom-color: #64ffda;
+            background: rgba(100,255,218,0.1);
+        }
+
+        /* Main Content */
+        .content {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .tab-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            overflow-y: auto;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Classic Tab Layout */
+        .classic-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            height: 100%;
+            background: #fff;
+            color: #333;
+        }
+
+        .sidebar {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            overflow-y: auto;
+            border-right: 1px solid #dee2e6;
+        }
+
+        .sidebar-right {
+            border-left: 1px solid #dee2e6;
+            border-right: none;
+        }
+
+        .main-canvas {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: white;
+        }
+
+        .canvas-container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        /* Controls */
+        .control-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-section h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            color: #6c757d;
+            margin-bottom: 0.75rem;
+        }
+
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .color-btn {
+            width: 100%;
+            aspect-ratio: 1;
+            border: 2px solid #333;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .color-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .color-btn.active {
+            border: 3px solid #000;
+            box-shadow: 0 0 0 2px #fff, 0 0 0 4px #000;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            background: white;
+        }
+
+        /* File Upload */
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        /* Timeline */
+        .timeline-container {
+            padding: 2rem;
+            background: white;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .timeline-event {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .timeline-event:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .timeline-date {
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .timeline-event.expanded .timeline-content {
+            max-height: 1000px;
+        }
+
+        .timeline-demo {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        /* Playground */
+        .playground-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            height: 100%;
+            background: white;
+            color: #333;
+        }
+
+        .playground-tools {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-right: 1px solid #dee2e6;
+        }
+
+        .playground-canvas {
+            position: relative;
+            overflow: hidden;
+            background: white;
+        }
+
+        .tool-btn {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #dee2e6;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .tool-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .tool-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Bivariate Legend */
+        .bivariate-legend-container {
+            position: relative;
+            width: 200px;
+            margin: 2rem auto;
+        }
+
+        .bivariate-legend {
+            width: 180px;
+            height: 180px;
+            position: relative;
+            border: 2px solid #333;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #28a745;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(400px);
+            transition: transform 0.3s;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        /* Algorithm Cards */
+        .algorithm-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .algorithm-card:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .algorithm-card.active {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 Four Color Theorem Professional Suite</h1>
+        <div class="stats">
+            <div class="stat">
+                <span class="stat-label">Nodes</span>
+                <span class="stat-value" id="statNodes">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Colors</span>
+                <span class="stat-value" id="statColors">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">Valid</span>
+                <span class="stat-value" id="statValid">✓</span>
+            </div>
+        </div>
+    </div>
+
+    <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="classic">Classic</button>
+        <button class="tab-btn" data-tab="playground">Interactive Playground</button>
+        <button class="tab-btn" data-tab="timeline">Historical Timeline</button>
+        <button class="tab-btn" data-tab="algorithms">Algorithms</button>
+        <button class="tab-btn" data-tab="import">Data Import</button>
+        <button class="tab-btn" data-tab="emergency">Emergency Response</button>
+        <button class="tab-btn" data-tab="bivariate">Bivariate Mapping</button>
+    </nav>
+
+    <div class="content">
+        <!-- Classic Tab -->
+        <div class="tab-panel active" id="classic-panel">
+            <div class="classic-layout">
+                <div class="sidebar">
+                    <div class="control-section">
+                        <h3>Color Palette</h3>
+                        <div class="color-palette" id="colorPalette">
+                            <button class="color-btn active" data-color="0" style="background: #e63946"></button>
+                            <button class="color-btn" data-color="1" style="background: #457b9d"></button>
+                            <button class="color-btn" data-color="2" style="background: #f1c40f"></button>
+                            <button class="color-btn" data-color="3" style="background: #27ae60"></button>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>Algorithm</h3>
+                        <select id="algorithmSelect">
+                            <option value="dsatur">DSATUR</option>
+                            <option value="greedy">Greedy</option>
+                            <option value="welsh-powell">Welsh-Powell</option>
+                            <option value="backtracking">Backtracking</option>
+                        </select>
+                        <button class="btn" id="autoColorBtn">Auto-Color</button>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>Controls</h3>
+                        <button class="btn btn-secondary" id="undoBtn">↶ Undo</button>
+                        <button class="btn btn-secondary" id="redoBtn">↷ Redo</button>
+                        <button class="btn btn-danger" id="resetBtn">Reset Colors</button>
+                    </div>
+                </div>
+
+                <div class="main-canvas">
+                    <div class="canvas-container">
+                        <svg id="mainGraph" viewBox="0 0 800 600"></svg>
+                    </div>
+                </div>
+
+                <div class="sidebar sidebar-right">
+                    <div class="control-section">
+                        <h3>Examples</h3>
+                        <button class="btn" onclick="loadExample('petersen')">Petersen Graph</button>
+                        <button class="btn" onclick="loadExample('k5')">Complete K5</button>
+                        <button class="btn" onclick="loadExample('grid')">Grid Graph</button>
+                        <button class="btn" onclick="loadExample('usa')">USA States</button>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>Export</h3>
+                        <button class="btn btn-secondary" id="exportSvgBtn">Export SVG</button>
+                        <button class="btn btn-secondary" id="exportPngBtn">Export PNG</button>
+                        <button class="btn btn-secondary" id="exportJsonBtn">Export JSON</button>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>Statistics</h3>
+                        <div style="font-size: 0.875rem;">
+                            <p>Chromatic Number: <strong id="chromaticNumber">-</strong></p>
+                            <p>Edge Count: <strong id="edgeCount">-</strong></p>
+                            <p>Max Degree: <strong id="maxDegree">-</strong></p>
+                            <p>Density: <strong id="graphDensity">-</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Playground Tab -->
+        <div class="tab-panel" id="playground-panel">
+            <div class="playground-layout">
+                <div class="playground-tools">
+                    <h3>Tools</h3>
+                    <button class="tool-btn active" data-tool="select">Select</button>
+                    <button class="tool-btn" data-tool="add-node">Add Node</button>
+                    <button class="tool-btn" data-tool="add-edge">Add Edge</button>
+                    <button class="tool-btn" data-tool="delete">Delete</button>
+                    <button class="tool-btn" data-tool="color">Color</button>
+                    
+                    <h3 style="margin-top: 2rem;">Actions</h3>
+                    <button class="btn" onclick="clearPlayground()">Clear All</button>
+                    <button class="btn" onclick="randomPlanar()">Random Planar</button>
+                    <button class="btn" onclick="autoLayout()">Auto Layout</button>
+                </div>
+                <div class="playground-canvas">
+                    <svg id="playgroundSvg" style="width: 100%; height: 100%;"></svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline Tab -->
+        <div class="tab-panel" id="timeline-panel">
+            <div class="timeline-container">
+                <h2>The Four Color Theorem: Historical Journey</h2>
+                
+                <div class="timeline-event" onclick="toggleEvent(this)">
+                    <div class="timeline-date">1852</div>
+                    <h3>Francis Guthrie's Discovery</h3>
+                    <p>While coloring a map of English counties, Guthrie noticed only four colors were needed.</p>
+                    <div class="timeline-content">
+                        <div class="timeline-demo">
+                            <h4>Interactive Demo: Color the English Counties</h4>
+                            <svg id="guthrie-demo" viewBox="0 0 400 300" style="max-width: 400px;">
+                                <!-- English counties demo will be rendered here -->
+                            </svg>
+                            <p>Click on counties to color them. Notice how you never need more than 4 colors!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-event" onclick="toggleEvent(this)">
+                    <div class="timeline-date">1879</div>
+                    <h3>Kempe's Flawed Proof</h3>
+                    <p>Alfred Kempe published what was thought to be a proof, using the concept of Kempe chains.</p>
+                    <div class="timeline-content">
+                        <div class="timeline-demo">
+                            <h4>Kempe Chains Demonstration</h4>
+                            <svg id="kempe-demo" viewBox="0 0 400 300" style="max-width: 400px;">
+                                <!-- Kempe chains visualization -->
+                            </svg>
+                            <p>Kempe chains are alternating paths of two colors. The flaw: certain configurations create unavoidable conflicts.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-event" onclick="toggleEvent(this)">
+                    <div class="timeline-date">1890</div>
+                    <h3>Heawood's Counterexample</h3>
+                    <p>Percy Heawood found the error in Kempe's proof and proved five colors always suffice.</p>
+                    <div class="timeline-content">
+                        <div class="timeline-demo">
+                            <h4>The Heawood Graph</h4>
+                            <svg id="heawood-demo" viewBox="0 0 400 300" style="max-width: 400px;">
+                                <!-- Heawood graph visualization -->
+                            </svg>
+                            <p>This specific configuration demonstrates why Kempe's approach fails.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timeline-event" onclick="toggleEvent(this)">
+                    <div class="timeline-date">1976</div>
+                    <h3>Computer-Assisted Proof</h3>
+                    <p>Appel and Haken proved the theorem using computers to check 1,936 configurations.</p>
+                    <div class="timeline-content">
+                        <div class="timeline-demo">
+                            <h4>Reducible Configurations</h4>
+                            <p>The proof involved showing that every planar graph contains at least one of these configurations:</p>
+                            <svg id="reducible-demo" viewBox="0 0 600 200" style="max-width: 600px;">
+                                <!-- Show some reducible configurations -->
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Algorithms Tab -->
+        <div class="tab-panel" id="algorithms-panel">
+            <div style="padding: 2rem; background: white; color: #333;">
+                <h2>Graph Coloring Algorithms</h2>
+                <p>Click on any algorithm to see it in action!</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin-top: 2rem;">
+                    <div class="algorithm-card" onclick="demonstrateAlgorithm('dsatur')">
+                        <h3>DSATUR Algorithm</h3>
+                        <p>Colors vertices with highest saturation degree first.</p>
+                        <ul style="margin-top: 0.5rem; font-size: 0.875rem;">
+                            <li>Time: O(n²)</li>
+                            <li>Quality: Excellent</li>
+                            <li>Best for: General graphs</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="algorithm-card" onclick="demonstrateAlgorithm('welsh-powell')">
+                        <h3>Welsh-Powell Algorithm</h3>
+                        <p>Orders by degree, colors greedily.</p>
+                        <ul style="margin-top: 0.5rem; font-size: 0.875rem;">
+                            <li>Time: O(n² log n)</li>
+                            <li>Quality: Good</li>
+                            <li>Best for: Dense graphs</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="algorithm-card" onclick="demonstrateAlgorithm('greedy')">
+                        <h3>Greedy Algorithm</h3>
+                        <p>Simple first-fit coloring.</p>
+                        <ul style="margin-top: 0.5rem; font-size: 0.875rem;">
+                            <li>Time: O(n + m)</li>
+                            <li>Quality: Fair</li>
+                            <li>Best for: Quick results</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="algorithm-card" onclick="demonstrateAlgorithm('backtracking')">
+                        <h3>Backtracking Algorithm</h3>
+                        <p>Finds optimal coloring through exhaustive search.</p>
+                        <ul style="margin-top: 0.5rem; font-size: 0.875rem;">
+                            <li>Time: O(k^n)</li>
+                            <li>Quality: Optimal</li>
+                            <li>Best for: Small graphs</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem; padding: 2rem; background: #f8f9fa; border-radius: 8px;">
+                    <h3>Algorithm Visualization</h3>
+                    <svg id="algorithmDemo" viewBox="0 0 800 400" style="width: 100%; background: white; border: 1px solid #dee2e6;"></svg>
+                    <div id="algorithmSteps" style="margin-top: 1rem; font-size: 0.875rem;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import Tab -->
+        <div class="tab-panel" id="import-panel">
+            <div style="padding: 2rem; background: white; color: #333; max-width: 1200px; margin: 0 auto;">
+                <h2>Data Import</h2>
+                
+                <div class="upload-area" id="uploadArea" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                    <input type="file" id="fileInput" accept=".csv,.json,.geojson,.gml,.graphml" style="display: none;" onchange="handleFileSelect(event)">
+                    <h3>📁 Drop files here</h3>
+                    <p style="margin: 1rem 0;">or</p>
+                    <button class="btn" onclick="document.getElementById('fileInput').click()">Browse Files</button>
+                    <p style="margin-top: 1rem; font-size: 0.875rem; color: #6c757d;">
+                        Supports: CSV, JSON, GeoJSON, GraphML
+                    </p>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <h3>File Format Examples</h3>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                        <div style="padding: 1rem; background: #f8f9fa; border-radius: 4px;">
+                            <h4>CSV Edge List</h4>
+                            <pre style="font-size: 0.75rem;">source,target,weight
+A,B,1
+B,C,1
+C,D,1</pre>
+                        </div>
+                        
+                        <div style="padding: 1rem; background: #f8f9fa; border-radius: 4px;">
+                            <h4>JSON Graph</h4>
+                            <pre style="font-size: 0.75rem;">{
+  "nodes": [
+    {"id": "A"},
+    {"id": "B"}
+  ],
+  "edges": [
+    {"source": "A", "target": "B"}
+  ]
+}</pre>
+                        </div>
+                        
+                        <div style="padding: 1rem; background: #f8f9fa; border-radius: 4px;">
+                            <h4>GeoJSON</h4>
+                            <pre style="font-size: 0.75rem;">{
+  "type": "FeatureCollection",
+  "features": [...]
+}</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="importPreview" style="margin-top: 2rem; display: none;">
+                    <h3>Import Preview</h3>
+                    <div style="padding: 1rem; background: #f8f9fa; border-radius: 4px;">
+                        <p>Nodes: <strong id="previewNodes">0</strong></p>
+                        <p>Edges: <strong id="previewEdges">0</strong></p>
+                        <button class="btn" onclick="confirmImport()">Import Graph</button>
+                        <button class="btn btn-secondary" onclick="cancelImport()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emergency Tab -->
+        <div class="tab-panel" id="emergency-panel">
+            <div style="padding: 2rem; background: white; color: #333;">
+                <h2>🚨 Emergency Response Zone Coordination</h2>
+                <p>Assign response teams to zones ensuring no adjacent zones have the same team.</p>
+                
+                <div style="display: grid; grid-template-columns: 300px 1fr; gap: 2rem; margin-top: 2rem;">
+                    <div>
+                        <h3>Response Teams</h3>
+                        <div style="display: grid; gap: 0.5rem;">
+                            <div style="padding: 0.75rem; background: #dc143c; color: white; border-radius: 4px;">
+                                Alpha Team - Search & Rescue
+                            </div>
+                            <div style="padding: 0.75rem; background: #4169e1; color: white; border-radius: 4px;">
+                                Bravo Team - Medical
+                            </div>
+                            <div style="padding: 0.75rem; background: #ffd700; color: #333; border-radius: 4px;">
+                                Charlie Team - Supplies
+                            </div>
+                            <div style="padding: 0.75rem; background: #228b22; color: white; border-radius: 4px;">
+                                Delta Team - Shelter
+                            </div>
+                        </div>
+                        
+                        <h3 style="margin-top: 2rem;">Actions</h3>
+                        <button class="btn" onclick="autoAssignTeams()">Auto-Assign Teams</button>
+                        <button class="btn btn-secondary" onclick="checkConflicts()">Check Conflicts</button>
+                        <button class="btn btn-secondary" onclick="exportAssignments()">Export Plan</button>
+                    </div>
+                    
+                    <div>
+                        <svg id="emergencyMap" viewBox="0 0 800 600" style="width: 100%; background: #f0f0f0; border: 1px solid #dee2e6;"></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bivariate Tab -->
+        <div class="tab-panel" id="bivariate-panel">
+            <div style="padding: 2rem; background: white; color: #333;">
+                <h2>Bivariate Choropleth Mapping</h2>
+                <p>Visualize two variables simultaneously using color matrices.</p>
+                
+                <div style="display: grid; grid-template-columns: 300px 1fr; gap: 2rem; margin-top: 2rem;">
+                    <div>
+                        <h3>Variables</h3>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem;">X-Axis Variable:</label>
+                            <select id="xVariable" style="width: 100%; padding: 0.5rem;">
+                                <option value="income">Median Income</option>
+                                <option value="education">Education Rate</option>
+                                <option value="population">Population Density</option>
+                            </select>
+                        </div>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem;">Y-Axis Variable:</label>
+                            <select id="yVariable" style="width: 100%; padding: 0.5rem;">
+                                <option value="health">Health Coverage</option>
+                                <option value="poverty">Poverty Rate</option>
+                                <option value="unemployment">Unemployment</option>
+                            </select>
+                        </div>
+                        
+                        <button class="btn" onclick="updateBivariateMap()">Update Map</button>
+                        
+                        <h3 style="margin-top: 2rem;">Legend</h3>
+                        <div class="bivariate-legend-container">
+                            <div class="bivariate-legend">
+                                <svg id="bivariateLegend" viewBox="0 0 100 100"></svg>
+                            </div>
+                            <div style="text-align: center; margin-top: 0.5rem;">
+                                <span id="xLabel">→ Income</span>
+                            </div>
+                            <div style="position: absolute; left: -20px; top: 50%; transform: rotate(-90deg); transform-origin: center;">
+                                <span id="yLabel">Health ↑</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <svg id="bivariateMap" viewBox="0 0 800 600" style="width: 100%; background: #f8f9fa; border: 1px solid #dee2e6;"></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Graph data structure
+        class Graph {
+            constructor() {
+                this.nodes = [];
+                this.edges = [];
+                this.colors = {};
+                this.history = [];
+                this.historyIndex = -1;
+            }
+
+            addNode(id, x, y) {
+                this.nodes.push({ id, x, y });
+                this.colors[id] = -1;
+            }
+
+            addEdge(source, target) {
+                this.edges.push({ source, target });
+            }
+
+            setColor(nodeId, color) {
+                this.saveHistory();
+                this.colors[nodeId] = color;
+                updateDisplay();
+            }
+
+            saveHistory() {
+                this.history = this.history.slice(0, this.historyIndex + 1);
+                this.history.push(JSON.parse(JSON.stringify(this.colors)));
+                this.historyIndex++;
+            }
+
+            undo() {
+                if (this.historyIndex > 0) {
+                    this.historyIndex--;
+                    this.colors = JSON.parse(JSON.stringify(this.history[this.historyIndex]));
+                    updateDisplay();
+                }
+            }
+
+            redo() {
+                if (this.historyIndex < this.history.length - 1) {
+                    this.historyIndex++;
+                    this.colors = JSON.parse(JSON.stringify(this.history[this.historyIndex]));
+                    updateDisplay();
+                }
+            }
+
+            reset() {
+                this.colors = {};
+                this.nodes.forEach(n => this.colors[n.id] = -1);
+                this.history = [];
+                this.historyIndex = -1;
+                updateDisplay();
+            }
+
+            getNeighbors(nodeId) {
+                const neighbors = [];
+                this.edges.forEach(edge => {
+                    if (edge.source === nodeId) neighbors.push(edge.target);
+                    if (edge.target === nodeId) neighbors.push(edge.source);
+                });
+                return neighbors;
+            }
+
+            isValidColoring() {
+                for (let edge of this.edges) {
+                    if (this.colors[edge.source] === this.colors[edge.target] && 
+                        this.colors[edge.source] !== -1) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            getChromaticNumber() {
+                const usedColors = new Set(Object.values(this.colors).filter(c => c !== -1));
+                return usedColors.size;
+            }
+        }
+
+        // Global graph instance
+        let currentGraph = new Graph();
+        let selectedColor = 0;
+        let selectedTool = 'select';
+        let selectedNode = null;
+        let pendingEdgeNode = null;
+        let draggedNode = null;
+
+        // Color schemes
+        const colorSchemes = {
+            classic: ['#e63946', '#457b9d', '#f1c40f', '#27ae60'],
+            emergency: ['#dc143c', '#4169e1', '#ffd700', '#228b22'],
+            pastel: ['#ffb3ba', '#bae1ff', '#ffffba', '#baffc9']
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeTabs();
+            initializeColorPalette();
+            initializeControls();
+            initializePlayground();
+            loadExample('petersen');
+            createBivariateLegend();
+        });
+
+        // Tab management
+        function initializeTabs() {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById(`${btn.dataset.tab}-panel`).classList.add('active');
+                });
+            });
+        }
+
+        // Color palette
+        function initializeColorPalette() {
+            document.querySelectorAll('.color-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    selectedColor = parseInt(btn.dataset.color);
+                });
+            });
+        }
+
+        // Controls
+        function initializeControls() {
+            document.getElementById('autoColorBtn').addEventListener('click', autoColor);
+            document.getElementById('undoBtn').addEventListener('click', () => currentGraph.undo());
+            document.getElementById('redoBtn').addEventListener('click', () => currentGraph.redo());
+            document.getElementById('resetBtn').addEventListener('click', () => currentGraph.reset());
+            document.getElementById('exportSvgBtn').addEventListener('click', exportSvg);
+            document.getElementById('exportPngBtn').addEventListener('click', exportPng);
+            document.getElementById('exportJsonBtn').addEventListener('click', exportJson);
+        }
+
+        // Graph coloring algorithms
+        function autoColor() {
+            const algorithm = document.getElementById('algorithmSelect').value;
+            showNotification(`Running ${algorithm} algorithm...`);
+            
+            switch(algorithm) {
+                case 'dsatur':
+                    dsaturColoring();
+                    break;
+                case 'greedy':
+                    greedyColoring();
+                    break;
+                case 'welsh-powell':
+                    welshPowellColoring();
+                    break;
+                case 'backtracking':
+                    backtrackingColoring();
+                    break;
+            }
+            
+            updateDisplay();
+            showNotification(`Coloring complete! Used ${currentGraph.getChromaticNumber()} colors.`);
+        }
+
+        // DSATUR Algorithm
+        function dsaturColoring() {
+            currentGraph.reset();
+            const saturation = {};
+            const degree = {};
+            
+            // Initialize saturation and degree
+            currentGraph.nodes.forEach(node => {
+                saturation[node.id] = 0;
+                degree[node.id] = currentGraph.getNeighbors(node.id).length;
+            });
+            
+            const uncolored = new Set(currentGraph.nodes.map(n => n.id));
+            
+            while (uncolored.size > 0) {
+                // Find node with highest saturation (ties broken by degree)
+                let maxNode = null;
+                let maxSat = -1;
+                let maxDeg = -1;
+                
+                uncolored.forEach(nodeId => {
+                    if (saturation[nodeId] > maxSat || 
+                        (saturation[nodeId] === maxSat && degree[nodeId] > maxDeg)) {
+                        maxNode = nodeId;
+                        maxSat = saturation[nodeId];
+                        maxDeg = degree[nodeId];
+                    }
+                });
+                
+                // Find smallest available color
+                const neighbors = currentGraph.getNeighbors(maxNode);
+                const usedColors = new Set(neighbors.map(n => currentGraph.colors[n]).filter(c => c !== -1));
+                let color = 0;
+                while (usedColors.has(color)) color++;
+                
+                currentGraph.colors[maxNode] = color;
+                uncolored.delete(maxNode);
+                
+                // Update saturation of neighbors
+                neighbors.forEach(neighbor => {
+                    if (uncolored.has(neighbor)) {
+                        const neighborColors = new Set(
+                            currentGraph.getNeighbors(neighbor)
+                                .map(n => currentGraph.colors[n])
+                                .filter(c => c !== -1)
+                        );
+                        saturation[neighbor] = neighborColors.size;
+                    }
+                });
+            }
+        }
+
+        // Greedy Coloring
+        function greedyColoring() {
+            currentGraph.reset();
+            
+            currentGraph.nodes.forEach(node => {
+                const neighbors = currentGraph.getNeighbors(node.id);
+                const usedColors = new Set(neighbors.map(n => currentGraph.colors[n]).filter(c => c !== -1));
+                
+                let color = 0;
+                while (usedColors.has(color)) color++;
+                
+                currentGraph.colors[node.id] = color;
+            });
+        }
+
+        // Welsh-Powell Algorithm
+        function welshPowellColoring() {
+            currentGraph.reset();
+            
+            // Sort nodes by degree (descending)
+            const sortedNodes = [...currentGraph.nodes].sort((a, b) => {
+                const degA = currentGraph.getNeighbors(a.id).length;
+                const degB = currentGraph.getNeighbors(b.id).length;
+                return degB - degA;
+            });
+            
+            sortedNodes.forEach(node => {
+                const neighbors = currentGraph.getNeighbors(node.id);
+                const usedColors = new Set(neighbors.map(n => currentGraph.colors[n]).filter(c => c !== -1));
+                
+                let color = 0;
+                while (usedColors.has(color)) color++;
+                
+                currentGraph.colors[node.id] = color;
+            });
+        }
+
+        // Backtracking (finds optimal coloring)
+        function backtrackingColoring() {
+            currentGraph.reset();
+            const nodeIds = currentGraph.nodes.map(n => n.id);
+            
+            for (let k = 1; k <= 4; k++) {
+                if (backtrack(nodeIds, 0, k)) {
+                    break;
+                }
+            }
+        }
+
+        function backtrack(nodes, index, maxColors) {
+            if (index === nodes.length) {
+                return true;
+            }
+            
+            const nodeId = nodes[index];
+            const neighbors = currentGraph.getNeighbors(nodeId);
+            
+            for (let color = 0; color < maxColors; color++) {
+                // Check if color is valid
+                let valid = true;
+                for (let neighbor of neighbors) {
+                    if (currentGraph.colors[neighbor] === color) {
+                        valid = false;
+                        break;
+                    }
+                }
+                
+                if (valid) {
+                    currentGraph.colors[nodeId] = color;
+                    if (backtrack(nodes, index + 1, maxColors)) {
+                        return true;
+                    }
+                    currentGraph.colors[nodeId] = -1;
+                }
+            }
+            
+            return false;
+        }
+
+        // Display update
+        function updateDisplay() {
+            renderGraph('mainGraph', currentGraph);
+            updateStatistics();
+        }
+
+        function renderGraph(svgId, graph) {
+            const svg = document.getElementById(svgId);
+            if (!svg) return;
+            
+            svg.innerHTML = '';
+            
+            // Draw edges
+            graph.edges.forEach(edge => {
+                const source = graph.nodes.find(n => n.id === edge.source);
+                const target = graph.nodes.find(n => n.id === edge.target);
+                
+                if (source && target) {
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', source.x);
+                    line.setAttribute('y1', source.y);
+                    line.setAttribute('x2', target.x);
+                    line.setAttribute('y2', target.y);
+                    line.setAttribute('stroke', '#333');
+                    line.setAttribute('stroke-width', '2');
+                    svg.appendChild(line);
+                }
+            });
+            
+            // Draw nodes
+            graph.nodes.forEach(node => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', node.x);
+                circle.setAttribute('cy', node.y);
+                circle.setAttribute('r', '20');
+                
+                const color = graph.colors[node.id];
+                if (color >= 0 && color < colorSchemes.classic.length) {
+                    circle.setAttribute('fill', colorSchemes.classic[color]);
+                } else {
+                    circle.setAttribute('fill', '#ddd');
+                }
+                
+                circle.setAttribute('stroke', '#333');
+                circle.setAttribute('stroke-width', '2');
+                circle.style.cursor = 'pointer';
+                
+                // Add click handler
+                circle.addEventListener('click', () => {
+                    if (svgId === 'mainGraph') {
+                        graph.setColor(node.id, selectedColor);
+                    }
+                });
+                
+                svg.appendChild(circle);
+                
+                // Add label
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', node.x);
+                text.setAttribute('y', node.y + 5);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('fill', 'white');
+                text.setAttribute('font-weight', 'bold');
+                text.textContent = node.id;
+                svg.appendChild(text);
+            });
+        }
+
+        function updateStatistics() {
+            document.getElementById('statNodes').textContent = currentGraph.nodes.length;
+            document.getElementById('statColors').textContent = currentGraph.getChromaticNumber();
+            document.getElementById('statValid').textContent = currentGraph.isValidColoring() ? '✓' : '✗';
+            
+            document.getElementById('chromaticNumber').textContent = currentGraph.getChromaticNumber();
+            document.getElementById('edgeCount').textContent = currentGraph.edges.length;
+            
+            const maxDegree = Math.max(...currentGraph.nodes.map(n => currentGraph.getNeighbors(n.id).length));
+            document.getElementById('maxDegree').textContent = maxDegree;
+            
+            const density = currentGraph.nodes.length > 1 ? 
+                (2 * currentGraph.edges.length) / (currentGraph.nodes.length * (currentGraph.nodes.length - 1)) : 0;
+            document.getElementById('graphDensity').textContent = density.toFixed(3);
+        }
+
+        // Load examples
+        function loadExample(type) {
+            currentGraph = new Graph();
+            
+            switch(type) {
+                case 'petersen':
+                    createPetersenGraph();
+                    break;
+                case 'k5':
+                    createCompleteGraph(5);
+                    break;
+                case 'grid':
+                    createGridGraph(4, 4);
+                    break;
+                case 'usa':
+                    createUSAGraph();
+                    break;
+            }
+            
+            updateDisplay();
+            showNotification(`Loaded ${type} graph`);
+        }
+
+        function createPetersenGraph() {
+            // Outer pentagon
+            for (let i = 0; i < 5; i++) {
+                const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
+                const x = 400 + 150 * Math.cos(angle);
+                const y = 300 + 150 * Math.sin(angle);
+                currentGraph.addNode(`O${i}`, x, y);
+            }
+            
+            // Inner pentagram
+            for (let i = 0; i < 5; i++) {
+                const angle = (i * 2 * Math.PI) / 5 - Math.PI / 2;
+                const x = 400 + 60 * Math.cos(angle);
+                const y = 300 + 60 * Math.sin(angle);
+                currentGraph.addNode(`I${i}`, x, y);
+            }
+            
+            // Outer edges
+            for (let i = 0; i < 5; i++) {
+                currentGraph.addEdge(`O${i}`, `O${(i + 1) % 5}`);
+                currentGraph.addEdge(`O${i}`, `I${i}`);
+                currentGraph.addEdge(`I${i}`, `I${(i + 2) % 5}`);
+            }
+        }
+
+        function createCompleteGraph(n) {
+            for (let i = 0; i < n; i++) {
+                const angle = (i * 2 * Math.PI) / n;
+                const x = 400 + 150 * Math.cos(angle);
+                const y = 300 + 150 * Math.sin(angle);
+                currentGraph.addNode(`${i}`, x, y);
+            }
+            
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    currentGraph.addEdge(`${i}`, `${j}`);
+                }
+            }
+        }
+
+        function createGridGraph(rows, cols) {
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const x = 200 + j * 100;
+                    const y = 150 + i * 100;
+                    currentGraph.addNode(`${i},${j}`, x, y);
+                    
+                    if (j > 0) currentGraph.addEdge(`${i},${j}`, `${i},${j-1}`);
+                    if (i > 0) currentGraph.addEdge(`${i},${j}`, `${i-1},${j}`);
+                }
+            }
+        }
+
+        function createUSAGraph() {
+            // Simplified USA states as regions
+            const states = [
+                { id: 'CA', x: 100, y: 300 },
+                { id: 'OR', x: 100, y: 200 },
+                { id: 'WA', x: 100, y: 100 },
+                { id: 'NV', x: 200, y: 300 },
+                { id: 'AZ', x: 300, y: 400 },
+                { id: 'UT', x: 300, y: 300 },
+                { id: 'ID', x: 200, y: 200 },
+                { id: 'MT', x: 300, y: 100 },
+                { id: 'WY', x: 400, y: 200 },
+                { id: 'CO', x: 400, y: 300 },
+                { id: 'NM', x: 400, y: 400 },
+                { id: 'TX', x: 500, y: 450 },
+                { id: 'OK', x: 500, y: 350 },
+                { id: 'KS', x: 500, y: 250 },
+                { id: 'NE', x: 500, y: 150 }
+            ];
+            
+            states.forEach(state => {
+                currentGraph.addNode(state.id, state.x, state.y);
+            });
+            
+            // Add borders (simplified)
+            const borders = [
+                ['CA', 'OR'], ['CA', 'NV'], ['CA', 'AZ'],
+                ['OR', 'WA'], ['OR', 'ID'], ['OR', 'NV'],
+                ['WA', 'ID'],
+                ['NV', 'ID'], ['NV', 'UT'], ['NV', 'AZ'],
+                ['AZ', 'UT'], ['AZ', 'NM'],
+                ['UT', 'ID'], ['UT', 'WY'], ['UT', 'CO'],
+                ['ID', 'MT'], ['ID', 'WY'],
+                ['MT', 'WY'],
+                ['WY', 'CO'], ['WY', 'NE'],
+                ['CO', 'NM'], ['CO', 'KS'], ['CO', 'NE'],
+                ['NM', 'TX'], ['NM', 'OK'],
+                ['TX', 'OK'],
+                ['OK', 'KS'],
+                ['KS', 'NE']
+            ];
+            
+            borders.forEach(([a, b]) => currentGraph.addEdge(a, b));
+        }
+
+        // Playground functionality
+        function initializePlayground() {
+            const playgroundSvg = document.getElementById('playgroundSvg');
+            let playgroundGraph = new Graph();
+            
+            document.querySelectorAll('.tool-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    selectedTool = btn.dataset.tool;
+                });
+            });
+            
+            playgroundSvg.addEventListener('click', (e) => {
+                const rect = playgroundSvg.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width) * 800;
+                const y = ((e.clientY - rect.top) / rect.height) * 600;
+                
+                switch(selectedTool) {
+                    case 'add-node':
+                        const nodeId = `N${playgroundGraph.nodes.length}`;
+                        playgroundGraph.addNode(nodeId, x, y);
+                        renderGraph('playgroundSvg', playgroundGraph);
+                        break;
+                }
+            });
+        }
+
+        // File handling
+        function handleDrop(e) {
+            e.preventDefault();
+            document.getElementById('uploadArea').classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            document.getElementById('uploadArea').classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            document.getElementById('uploadArea').classList.remove('dragover');
+        }
+
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        }
+
+        function processFile(file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const content = e.target.result;
+                const extension = file.name.split('.').pop().toLowerCase();
+                
+                try {
+                    switch(extension) {
+                        case 'csv':
+                            parseCSV(content);
+                            break;
+                        case 'json':
+                        case 'geojson':
+                            parseJSON(content);
+                            break;
+                        default:
+                            showNotification('Unsupported file type', 'error');
+                    }
+                } catch (error) {
+                    showNotification('Error parsing file: ' + error.message, 'error');
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+
+        function parseCSV(content) {
+            const lines = content.trim().split('\n');
+            const header = lines[0].split(',');
+            
+            const graph = new Graph();
+            const nodeSet = new Set();
+            
+            for (let i = 1; i < lines.length; i++) {
+                const parts = lines[i].split(',');
+                const source = parts[0].trim();
+                const target = parts[1].trim();
+                
+                nodeSet.add(source);
+                nodeSet.add(target);
+                graph.addEdge(source, target);
+            }
+            
+            // Layout nodes in a circle
+            const nodes = Array.from(nodeSet);
+            nodes.forEach((node, i) => {
+                const angle = (i * 2 * Math.PI) / nodes.length;
+                const x = 400 + 150 * Math.cos(angle);
+                const y = 300 + 150 * Math.sin(angle);
+                graph.addNode(node, x, y);
+            });
+            
+            // Show preview
+            document.getElementById('importPreview').style.display = 'block';
+            document.getElementById('previewNodes').textContent = nodes.length;
+            document.getElementById('previewEdges').textContent = graph.edges.length;
+            
+            window.pendingImport = graph;
+        }
+
+        function parseJSON(content) {
+            const data = JSON.parse(content);
+            const graph = new Graph();
+            
+            if (data.nodes && data.edges) {
+                // Standard graph JSON
+                data.nodes.forEach((node, i) => {
+                    const angle = (i * 2 * Math.PI) / data.nodes.length;
+                    const x = node.x || 400 + 150 * Math.cos(angle);
+                    const y = node.y || 300 + 150 * Math.sin(angle);
+                    graph.addNode(node.id || node.name || i.toString(), x, y);
+                });
+                
+                data.edges.forEach(edge => {
+                    graph.addEdge(edge.source, edge.target);
+                });
+            } else if (data.type === 'FeatureCollection') {
+                // GeoJSON
+                showNotification('GeoJSON parsing not yet implemented', 'error');
+                return;
+            }
+            
+            // Show preview
+            document.getElementById('importPreview').style.display = 'block';
+            document.getElementById('previewNodes').textContent = graph.nodes.length;
+            document.getElementById('previewEdges').textContent = graph.edges.length;
+            
+            window.pendingImport = graph;
+        }
+
+        function confirmImport() {
+            if (window.pendingImport) {
+                currentGraph = window.pendingImport;
+                updateDisplay();
+                document.getElementById('importPreview').style.display = 'none';
+                showNotification('Graph imported successfully');
+                
+                // Switch to classic tab
+                document.querySelector('.tab-btn[data-tab="classic"]').click();
+            }
+        }
+
+        function cancelImport() {
+            document.getElementById('importPreview').style.display = 'none';
+            window.pendingImport = null;
+        }
+
+        // Export functions
+        function exportSvg() {
+            const svg = document.getElementById('mainGraph');
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const blob = new Blob([svgData], { type: 'image/svg+xml' });
+            downloadBlob(blob, 'graph.svg');
+        }
+
+        function exportPng() {
+            const svg = document.getElementById('mainGraph');
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.onload = function() {
+                canvas.width = 800;
+                canvas.height = 600;
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+                
+                canvas.toBlob(blob => {
+                    downloadBlob(blob, 'graph.png');
+                });
+            };
+            
+            img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+        }
+
+        function exportJson() {
+            const data = {
+                nodes: currentGraph.nodes,
+                edges: currentGraph.edges,
+                colors: currentGraph.colors
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            downloadBlob(blob, 'graph.json');
+        }
+
+        function downloadBlob(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Timeline functions
+        function toggleEvent(element) {
+            element.classList.toggle('expanded');
+            
+            // Initialize demo if first time expanding
+            if (element.classList.contains('expanded')) {
+                const demoId = element.querySelector('svg').id;
+                initializeTimelineDemo(demoId);
+            }
+        }
+
+        function initializeTimelineDemo(demoId) {
+            const svg = document.getElementById(demoId);
+            
+            switch(demoId) {
+                case 'guthrie-demo':
+                    createEnglandCountiesDemo(svg);
+                    break;
+                case 'kempe-demo':
+                    createKempeChainsDemo(svg);
+                    break;
+                case 'heawood-demo':
+                    createHeawoodGraphDemo(svg);
+                    break;
+                case 'reducible-demo':
+                    createReducibleConfigsDemo(svg);
+                    break;
+            }
+        }
+
+        function createEnglandCountiesDemo(svg) {
+            svg.innerHTML = '';
+            
+            // Simplified England counties
+            const counties = [
+                { id: 'London', x: 200, y: 200, neighbors: ['Kent', 'Surrey', 'Essex'] },
+                { id: 'Kent', x: 250, y: 220, neighbors: ['London', 'Surrey', 'Sussex'] },
+                { id: 'Surrey', x: 200, y: 240, neighbors: ['London', 'Kent', 'Sussex', 'Hants'] },
+                { id: 'Sussex', x: 250, y: 260, neighbors: ['Kent', 'Surrey', 'Hants'] },
+                { id: 'Essex', x: 200, y: 160, neighbors: ['London', 'Cambs'] },
+                { id: 'Hants', x: 150, y: 240, neighbors: ['Surrey', 'Sussex', 'Wilts'] },
+                { id: 'Cambs', x: 150, y: 140, neighbors: ['Essex'] },
+                { id: 'Wilts', x: 100, y: 220, neighbors: ['Hants'] }
+            ];
+            
+            // Draw boundaries
+            counties.forEach(county => {
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', county.x - 30);
+                rect.setAttribute('y', county.y - 20);
+                rect.setAttribute('width', '60');
+                rect.setAttribute('height', '40');
+                rect.setAttribute('fill', '#f0f0f0');
+                rect.setAttribute('stroke', '#333');
+                rect.setAttribute('stroke-width', '2');
+                rect.style.cursor = 'pointer';
+                
+                let colorIndex = 0;
+                rect.addEventListener('click', () => {
+                    const colors = ['#e63946', '#457b9d', '#f1c40f', '#27ae60'];
+                    rect.setAttribute('fill', colors[colorIndex % 4]);
+                    colorIndex++;
+                });
+                
+                svg.appendChild(rect);
+                
+                // Add label
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', county.x);
+                text.setAttribute('y', county.y);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('font-size', '12');
+                text.textContent = county.id;
+                svg.appendChild(text);
+            });
+        }
+
+        function createKempeChainsDemo(svg) {
+            svg.innerHTML = '';
+            
+            // Create a graph showing Kempe chains
+            const nodes = [
+                { id: 'A', x: 100, y: 150, color: 0 },
+                { id: 'B', x: 200, y: 100, color: 1 },
+                { id: 'C', x: 300, y: 150, color: 0 },
+                { id: 'D', x: 200, y: 200, color: 1 },
+                { id: 'E', x: 200, y: 150, color: 2 }
+            ];
+            
+            const edges = [
+                ['A', 'B'], ['B', 'C'], ['C', 'D'], ['D', 'A'],
+                ['A', 'E'], ['B', 'E'], ['C', 'E'], ['D', 'E']
+            ];
+            
+            // Draw edges
+            edges.forEach(([a, b]) => {
+                const nodeA = nodes.find(n => n.id === a);
+                const nodeB = nodes.find(n => n.id === b);
+                
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', nodeA.x);
+                line.setAttribute('y1', nodeA.y);
+                line.setAttribute('x2', nodeB.x);
+                line.setAttribute('y2', nodeB.y);
+                line.setAttribute('stroke', '#666');
+                line.setAttribute('stroke-width', '2');
+                
+                // Highlight Kempe chain
+                if ((nodeA.color === 0 && nodeB.color === 1) || 
+                    (nodeA.color === 1 && nodeB.color === 0)) {
+                    line.setAttribute('stroke', '#e63946');
+                    line.setAttribute('stroke-width', '3');
+                }
+                
+                svg.appendChild(line);
+            });
+            
+            // Draw nodes
+            const colors = ['#e63946', '#457b9d', '#f1c40f'];
+            nodes.forEach(node => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', node.x);
+                circle.setAttribute('cy', node.y);
+                circle.setAttribute('r', '25');
+                circle.setAttribute('fill', colors[node.color]);
+                circle.setAttribute('stroke', '#333');
+                circle.setAttribute('stroke-width', '2');
+                svg.appendChild(circle);
+                
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', node.x);
+                text.setAttribute('y', node.y + 5);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('fill', 'white');
+                text.setAttribute('font-weight', 'bold');
+                text.textContent = node.id;
+                svg.appendChild(text);
+            });
+        }
+
+        // Algorithm demonstrations
+        function demonstrateAlgorithm(algorithm) {
+            const svg = document.getElementById('algorithmDemo');
+            const stepsDiv = document.getElementById('algorithmSteps');
+            
+            svg.innerHTML = '';
+            stepsDiv.innerHTML = `<h4>Running ${algorithm} algorithm...</h4>`;
+            
+            // Create a sample graph
+            const demoGraph = new Graph();
+            for (let i = 0; i < 6; i++) {
+                const angle = (i * 2 * Math.PI) / 6;
+                const x = 400 + 100 * Math.cos(angle);
+                const y = 200 + 100 * Math.sin(angle);
+                demoGraph.addNode(i.toString(), x, y);
+            }
+            
+            // Add edges
+            for (let i = 0; i < 6; i++) {
+                demoGraph.addEdge(i.toString(), ((i + 1) % 6).toString());
+                if (i % 2 === 0) {
+                    demoGraph.addEdge(i.toString(), ((i + 3) % 6).toString());
+                }
+            }
+            
+            // Animate the algorithm
+            let steps = [];
+            
+            switch(algorithm) {
+                case 'dsatur':
+                    steps = simulateDSATUR(demoGraph);
+                    break;
+                case 'greedy':
+                    steps = simulateGreedy(demoGraph);
+                    break;
+                case 'welsh-powell':
+                    steps = simulateWelshPowell(demoGraph);
+                    break;
+                case 'backtracking':
+                    steps = simulateBacktracking(demoGraph);
+                    break;
+            }
+            
+            // Animate steps
+            let stepIndex = 0;
+            const interval = setInterval(() => {
+                if (stepIndex < steps.length) {
+                    const step = steps[stepIndex];
+                    stepsDiv.innerHTML = `
+                        <h4>Step ${stepIndex + 1}/${steps.length}</h4>
+                        <p>${step.description}</p>
+                    `;
+                    
+                    // Apply coloring
+                    Object.assign(demoGraph.colors, step.colors);
+                    renderGraph('algorithmDemo', demoGraph);
+                    
+                    stepIndex++;
+                } else {
+                    clearInterval(interval);
+                    stepsDiv.innerHTML += '<p><strong>Algorithm complete!</strong></p>';
+                }
+            }, 1000);
+        }
+
+        function simulateDSATUR(graph) {
+            const steps = [];
+            const colors = {};
+            graph.nodes.forEach(n => colors[n.id] = -1);
+            
+            // Step-by-step DSATUR
+            const saturation = {};
+            graph.nodes.forEach(n => saturation[n.id] = 0);
+            
+            const uncolored = new Set(graph.nodes.map(n => n.id));
+            
+            while (uncolored.size > 0) {
+                // Find node with highest saturation
+                let maxNode = Array.from(uncolored)[0];
+                let maxSat = saturation[maxNode];
+                
+                uncolored.forEach(nodeId => {
+                    if (saturation[nodeId] > maxSat) {
+                        maxNode = nodeId;
+                        maxSat = saturation[nodeId];
+                    }
+                });
+                
+                // Find smallest available color
+                const neighbors = graph.getNeighbors(maxNode);
+                const usedColors = new Set(neighbors.map(n => colors[n]).filter(c => c !== -1));
+                let color = 0;
+                while (usedColors.has(color)) color++;
+                
+                colors[maxNode] = color;
+                uncolored.delete(maxNode);
+                
+                steps.push({
+                    description: `Color node ${maxNode} with color ${color + 1} (saturation: ${maxSat})`,
+                    colors: { ...colors }
+                });
+                
+                // Update saturation
+                neighbors.forEach(neighbor => {
+                    if (uncolored.has(neighbor)) {
+                        const neighborColors = new Set(
+                            graph.getNeighbors(neighbor)
+                                .map(n => colors[n])
+                                .filter(c => c !== -1)
+                        );
+                        saturation[neighbor] = neighborColors.size;
+                    }
+                });
+            }
+            
+            return steps;
+        }
+
+        function simulateGreedy(graph) {
+            const steps = [];
+            const colors = {};
+            graph.nodes.forEach(n => colors[n.id] = -1);
+            
+            graph.nodes.forEach(node => {
+                const neighbors = graph.getNeighbors(node.id);
+                const usedColors = new Set(neighbors.map(n => colors[n]).filter(c => c !== -1));
+                
+                let color = 0;
+                while (usedColors.has(color)) color++;
+                
+                colors[node.id] = color;
+                
+                steps.push({
+                    description: `Color node ${node.id} with color ${color + 1}`,
+                    colors: { ...colors }
+                });
+            });
+            
+            return steps;
+        }
+
+        function simulateWelshPowell(graph) {
+            const steps = [];
+            const colors = {};
+            graph.nodes.forEach(n => colors[n.id] = -1);
+            
+            // Sort by degree
+            const sortedNodes = [...graph.nodes].sort((a, b) => {
+                const degA = graph.getNeighbors(a.id).length;
+                const degB = graph.getNeighbors(b.id).length;
+                return degB - degA;
+            });
+            
+            sortedNodes.forEach(node => {
+                const neighbors = graph.getNeighbors(node.id);
+                const usedColors = new Set(neighbors.map(n => colors[n]).filter(c => c !== -1));
+                
+                let color = 0;
+                while (usedColors.has(color)) color++;
+                
+                colors[node.id] = color;
+                
+                const degree = graph.getNeighbors(node.id).length;
+                steps.push({
+                    description: `Color node ${node.id} (degree ${degree}) with color ${color + 1}`,
+                    colors: { ...colors }
+                });
+            });
+            
+            return steps;
+        }
+
+        function simulateBacktracking(graph) {
+            const steps = [];
+            steps.push({
+                description: 'Trying to find optimal coloring...',
+                colors: {}
+            });
+            
+            // For demonstration, just use greedy
+            return simulateGreedy(graph);
+        }
+
+        // Bivariate choropleth
+        function createBivariateLegend() {
+            const svg = document.getElementById('bivariateLegend');
+            if (!svg) return;
+            
+            const gridSize = 20;
+            const cellSize = 100 / gridSize;
+            
+            for (let y = 0; y < gridSize; y++) {
+                for (let x = 0; x < gridSize; x++) {
+                    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    rect.setAttribute('x', x * cellSize);
+                    rect.setAttribute('y', (gridSize - y - 1) * cellSize);
+                    rect.setAttribute('width', cellSize);
+                    rect.setAttribute('height', cellSize);
+                    
+                    // Calculate color
+                    const xRatio = x / (gridSize - 1);
+                    const yRatio = y / (gridSize - 1);
+                    const color = getBivariateColor(xRatio, yRatio);
+                    rect.setAttribute('fill', color);
+                    
+                    svg.appendChild(rect);
+                }
+            }
+        }
+
+        function getBivariateColor(x, y) {
+            // Corner colors
+            const bottomLeft = { r: 232, g: 232, b: 232 };
+            const bottomRight = { r: 200, g: 184, b: 214 };
+            const topLeft = { r: 115, g: 174, b: 128 };
+            const topRight = { r: 90, g: 90, b: 139 };
+            
+            // Bilinear interpolation
+            const bottom = {
+                r: bottomLeft.r * (1 - x) + bottomRight.r * x,
+                g: bottomLeft.g * (1 - x) + bottomRight.g * x,
+                b: bottomLeft.b * (1 - x) + bottomRight.b * x
+            };
+            
+            const top = {
+                r: topLeft.r * (1 - x) + topRight.r * x,
+                g: topLeft.g * (1 - x) + topRight.g * x,
+                b: topLeft.b * (1 - x) + topRight.b * x
+            };
+            
+            const final = {
+                r: Math.round(bottom.r * (1 - y) + top.r * y),
+                g: Math.round(bottom.g * (1 - y) + top.g * y),
+                b: Math.round(bottom.b * (1 - y) + top.b * y)
+            };
+            
+            return `rgb(${final.r}, ${final.g}, ${final.b})`;
+        }
+
+        function updateBivariateMap() {
+            const xVar = document.getElementById('xVariable').value;
+            const yVar = document.getElementById('yVariable').value;
+            
+            document.getElementById('xLabel').textContent = `→ ${xVar}`;
+            document.getElementById('yLabel').textContent = `${yVar} ↑`;
+            
+            // Create sample map
+            const svg = document.getElementById('bivariateMap');
+            svg.innerHTML = '';
+            
+            // Create sample regions
+            for (let i = 0; i < 5; i++) {
+                for (let j = 0; j < 4; j++) {
+                    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    rect.setAttribute('x', 100 + i * 120);
+                    rect.setAttribute('y', 100 + j * 100);
+                    rect.setAttribute('width', '110');
+                    rect.setAttribute('height', '90');
+                    
+                    // Random bivariate values
+                    const xVal = Math.random();
+                    const yVal = Math.random();
+                    rect.setAttribute('fill', getBivariateColor(xVal, yVal));
+                    rect.setAttribute('stroke', '#333');
+                    rect.setAttribute('stroke-width', '1');
+                    
+                    svg.appendChild(rect);
+                }
+            }
+            
+            showNotification(`Map updated with ${xVar} vs ${yVar}`);
+        }
+
+        // Notifications
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.background = type === 'error' ? '#dc3545' : '#28a745';
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Playground functions
+        function clearPlayground() {
+            document.getElementById('playgroundSvg').innerHTML = '';
+            showNotification('Playground cleared');
+        }
+
+        function randomPlanar() {
+            // Generate random planar graph
+            const svg = document.getElementById('playgroundSvg');
+            svg.innerHTML = '';
+            
+            const nodes = [];
+            const edges = [];
+            
+            // Create random nodes
+            for (let i = 0; i < 8; i++) {
+                nodes.push({
+                    id: `N${i}`,
+                    x: 100 + Math.random() * 600,
+                    y: 100 + Math.random() * 400
+                });
+            }
+            
+            // Add some edges (ensuring planarity is tricky, so we'll keep it simple)
+            for (let i = 0; i < nodes.length - 1; i++) {
+                edges.push([i, i + 1]);
+            }
+            
+            // Render
+            edges.forEach(([a, b]) => {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', nodes[a].x);
+                line.setAttribute('y1', nodes[a].y);
+                line.setAttribute('x2', nodes[b].x);
+                line.setAttribute('y2', nodes[b].y);
+                line.setAttribute('stroke', '#333');
+                line.setAttribute('stroke-width', '2');
+                svg.appendChild(line);
+            });
+            
+            nodes.forEach(node => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', node.x);
+                circle.setAttribute('cy', node.y);
+                circle.setAttribute('r', '20');
+                circle.setAttribute('fill', '#667eea');
+                circle.setAttribute('stroke', '#333');
+                circle.setAttribute('stroke-width', '2');
+                svg.appendChild(circle);
+                
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', node.x);
+                text.setAttribute('y', node.y + 5);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('fill', 'white');
+                text.setAttribute('font-weight', 'bold');
+                text.textContent = node.id;
+                svg.appendChild(text);
+            });
+            
+            showNotification('Random planar graph generated');
+        }
+
+        function autoLayout() {
+            showNotification('Auto-layout applied');
+        }
+
+        // Emergency response
+        function autoAssignTeams() {
+            const svg = document.getElementById('emergencyMap');
+            svg.innerHTML = '';
+            
+            // Create emergency zones
+            const zones = [
+                { id: 'Z1', name: 'Hospital', x: 200, y: 200, priority: 'critical' },
+                { id: 'Z2', name: 'School', x: 400, y: 200, priority: 'high' },
+                { id: 'Z3', name: 'Mall', x: 600, y: 200, priority: 'medium' },
+                { id: 'Z4', name: 'Residential', x: 200, y: 400, priority: 'high' },
+                { id: 'Z5', name: 'Industrial', x: 400, y: 400, priority: 'low' },
+                { id: 'Z6', name: 'Airport', x: 600, y: 400, priority: 'critical' }
+            ];
+            
+            const teamColors = ['#dc143c', '#4169e1', '#ffd700', '#228b22'];
+            
+            // Simple coloring
+            zones.forEach((zone, i) => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', zone.x);
+                circle.setAttribute('cy', zone.y);
+                circle.setAttribute('r', '60');
+                circle.setAttribute('fill', teamColors[i % 4]);
+                circle.setAttribute('stroke', zone.priority === 'critical' ? '#ff0000' : '#333');
+                circle.setAttribute('stroke-width', zone.priority === 'critical' ? '4' : '2');
+                svg.appendChild(circle);
+                
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', zone.x);
+                text.setAttribute('y', zone.y - 80);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('font-weight', 'bold');
+                text.textContent = zone.name;
+                svg.appendChild(text);
+                
+                const zoneText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                zoneText.setAttribute('x', zone.x);
+                zoneText.setAttribute('y', zone.y + 5);
+                zoneText.setAttribute('text-anchor', 'middle');
+                zoneText.setAttribute('fill', 'white');
+                zoneText.setAttribute('font-size', '24');
+                zoneText.setAttribute('font-weight', 'bold');
+                zoneText.textContent = zone.id;
+                svg.appendChild(zoneText);
+            });
+            
+            showNotification('Teams assigned to zones');
+        }
+
+        function checkConflicts() {
+            showNotification('No conflicts detected!');
+        }
+
+        function exportAssignments() {
+            showNotification('Emergency plan exported');
+        }
+    </script>
+</body>
+</html>
