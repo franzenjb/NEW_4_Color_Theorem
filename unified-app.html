@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Four Color Theorem - Complete Professional Suite</title>
+    <link href="https://unpkg.com/mapbox-gl@2.15.0/dist/mapbox-gl.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0e27;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .app-header {
+            background: linear-gradient(135deg, #1a1f3a 0%, #2a3f5f 100%);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .header-stat {
+            text-align: center;
+        }
+
+        .header-stat-value {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #64ffda;
+        }
+
+        .header-stat-label {
+            font-size: 0.75rem;
+            color: #8892b0;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            background: #1a1f3a;
+            padding: 0 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-x: auto;
+        }
+
+        .tab-nav-inner {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: #8892b0;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            position: relative;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: #64ffda;
+            background: rgba(100, 255, 218, 0.05);
+        }
+
+        .tab-btn.active {
+            color: #64ffda;
+            background: rgba(100, 255, 218, 0.1);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .tab-icon {
+            margin-right: 0.5rem;
+        }
+
+        /* Tab Content */
+        .tab-content-container {
+            flex: 1;
+            overflow: hidden;
+            background: #0a0e27;
+        }
+
+        .tab-panel {
+            display: none;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Classic Workspace */
+        .workspace-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr 320px;
+            height: 100%;
+            gap: 1px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .workspace-sidebar {
+            background: #1a1f3a;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .workspace-main {
+            background: #0a0e27;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .control-section h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        /* Color Palette */
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .color-btn {
+            height: 48px;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .color-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .color-btn.active {
+            border-color: #64ffda;
+            box-shadow: 0 0 10px rgba(100, 255, 218, 0.3);
+        }
+
+        /* Emergency Response Tab */
+        .emergency-layout {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            height: 100%;
+            background: #fff;
+            color: #333;
+        }
+
+        .emergency-sidebar {
+            background: #f8f9fa;
+            padding: 2rem;
+            overflow-y: auto;
+            border-right: 1px solid #dee2e6;
+        }
+
+        .emergency-main {
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .emergency-header {
+            background: linear-gradient(135deg, #DC143C, #8B0000);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        /* Bivariate Mapping */
+        .bivariate-layout {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #fff;
+            color: #333;
+            min-height: 100%;
+        }
+
+        .bivariate-legend-container {
+            position: relative;
+            width: 240px;
+            margin: 2rem auto;
+            padding-bottom: 40px;
+            padding-left: 40px;
+        }
+
+        .bivariate-legend {
+            width: 180px;
+            height: 180px;
+            position: relative;
+            border: 2px solid #333;
+        }
+
+        .bivariate-gradient {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .bivariate-legend svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .legend-tick {
+            position: absolute;
+            font-size: 0.7rem;
+            color: #666;
+        }
+
+        .axis-label {
+            position: absolute;
+            font-weight: bold;
+            color: #333;
+            font-size: 0.875rem;
+        }
+
+        .x-axis-label {
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+
+        .y-axis-label {
+            left: -30px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            transform-origin: center;
+            text-align: center;
+        }
+
+        /* Historical Timeline */
+        .timeline-layout {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100%;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .timeline-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .timeline-event {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .timeline-date {
+            background: #ff6b6b;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 24px;
+            display: inline-block;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        /* World-Class Platform */
+        .platform-layout {
+            display: grid;
+            grid-template-columns: 380px 1fr 320px;
+            height: 100%;
+            background: #0a0e27;
+        }
+
+        .platform-control {
+            background: linear-gradient(180deg, #1a1f3a 0%, #0a0e27 100%);
+            border-right: 1px solid #2a3f5f;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        .platform-main {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .platform-analytics {
+            background: linear-gradient(180deg, #1a1f3a 0%, #0a0e27 100%);
+            border-left: 1px solid #2a3f5f;
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+
+        /* Common UI Elements */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.875rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #8892b0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-danger {
+            background: #DC143C;
+            color: white;
+        }
+
+        .btn-success {
+            background: #27AE60;
+            color: white;
+        }
+
+        /* Canvas/SVG Containers */
+        .canvas-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .main-svg {
+            max-width: 100%;
+            max-height: 100%;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.75rem;
+            border-radius: 4px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #64ffda;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #8892b0;
+            margin-top: 0.25rem;
+        }
+
+        /* Algorithm Selector */
+        .algorithm-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .algorithm-option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .algorithm-option:hover {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+
+        .algorithm-option.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: transparent;
+        }
+
+        /* Loading States */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(100, 255, 218, 0.1);
+            border-top-color: #64ffda;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .workspace-layout,
+            .platform-layout {
+                grid-template-columns: 280px 1fr;
+            }
+            
+            .workspace-layout > :nth-child(3),
+            .platform-layout > :nth-child(3) {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .workspace-layout,
+            .platform-layout,
+            .emergency-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .workspace-sidebar,
+            .platform-control,
+            .emergency-sidebar {
+                display: none;
+            }
+
+            .tab-nav {
+                overflow-x: scroll;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <div>
+                <h1>Four Color Theorem Professional Suite</h1>
+                <p style="font-size: 0.875rem; color: #8892b0; margin-top: 0.25rem;">
+                    Advanced Geographic Analysis & Visualization Platform
+                </p>
+            </div>
+            <div class="header-stats">
+                <div class="header-stat">
+                    <div class="header-stat-value" id="globalNodes">-</div>
+                    <div class="header-stat-label">Total Nodes</div>
+                </div>
+                <div class="header-stat">
+                    <div class="header-stat-value" id="globalColors">-</div>
+                    <div class="header-stat-label">Colors Used</div>
+                </div>
+                <div class="header-stat">
+                    <div class="header-stat-value" id="globalTime">-</div>
+                    <div class="header-stat-label">Compute Time</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Tab Navigation -->
+    <nav class="tab-nav">
+        <div class="tab-nav-inner">
+            <button class="tab-btn active" data-tab="classic">
+                <span class="tab-icon">🎨</span>Classic Coloring
+            </button>
+            <button class="tab-btn" data-tab="emergency">
+                <span class="tab-icon">🚨</span>Emergency Response
+            </button>
+            <button class="tab-btn" data-tab="bivariate">
+                <span class="tab-icon">📊</span>Bivariate Mapping
+            </button>
+            <button class="tab-btn" data-tab="timeline">
+                <span class="tab-icon">📜</span>Historical Timeline
+            </button>
+            <button class="tab-btn" data-tab="platform">
+                <span class="tab-icon">🚀</span>Advanced Platform
+            </button>
+            <button class="tab-btn" data-tab="theory">
+                <span class="tab-icon">📚</span>Theory & Algorithms
+            </button>
+            <button class="tab-btn" data-tab="data">
+                <span class="tab-icon">📁</span>Data Import
+            </button>
+            <button class="tab-btn" data-tab="playground">
+                <span class="tab-icon">🎮</span>Playground
+            </button>
+        </div>
+    </nav>
+
+    <!-- Tab Content -->
+    <div class="tab-content-container">
+        <!-- Classic Coloring Tab -->
+        <div class="tab-panel active" id="classic-panel">
+            <div class="workspace-layout">
+                <aside class="workspace-sidebar">
+                    <div class="control-section">
+                        <h3>Color Palette</h3>
+                        <div class="color-palette">
+                            <button class="color-btn active" style="background: #E63946" data-color="0"></button>
+                            <button class="color-btn" style="background: #457B9D" data-color="1"></button>
+                            <button class="color-btn" style="background: #F1C40F" data-color="2"></button>
+                            <button class="color-btn" style="background: #27AE60" data-color="3"></button>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>Algorithm</h3>
+                        <select id="algorithmSelect" style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px;">
+                            <option value="dsatur">DSATUR (Recommended)</option>
+                            <option value="greedy">Greedy</option>
+                            <option value="welsh-powell">Welsh-Powell</option>
+                            <option value="backtracking">Backtracking</option>
+                        </select>
+                        <button class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                            Auto-Color Graph
+                        </button>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>Controls</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                            <button class="btn btn-secondary">↶ Undo</button>
+                            <button class="btn btn-secondary">↷ Redo</button>
+                        </div>
+                        <button class="btn btn-danger" style="width: 100%; margin-top: 0.5rem;">
+                            Reset Colors
+                        </button>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>Statistics</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">48</div>
+                                <div class="stat-label">Nodes</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">127</div>
+                                <div class="stat-label">Edges</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">4</div>
+                                <div class="stat-label">Colors</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">✓</div>
+                                <div class="stat-label">Valid</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>Export</h3>
+                        <button class="btn btn-secondary" style="width: 100%; margin-bottom: 0.5rem;">
+                            Export as SVG
+                        </button>
+                        <button class="btn btn-secondary" style="width: 100%;">
+                            Export as PNG
+                        </button>
+                    </div>
+                </aside>
+
+                <div class="workspace-main">
+                    <div class="canvas-container">
+                        <svg class="main-svg" viewBox="0 0 800 600" style="width: 90%; height: 90%;">
+                            <!-- Graph content -->
+                            <g id="classicGraph">
+                                <!-- Will be populated by JavaScript -->
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+
+                <aside class="workspace-sidebar">
+                    <div class="control-section">
+                        <h3>Examples</h3>
+                        <div class="algorithm-list">
+                            <div class="algorithm-option">US States Map</div>
+                            <div class="algorithm-option">Petersen Graph</div>
+                            <div class="algorithm-option">Europe Regions</div>
+                            <div class="algorithm-option">Random Planar</div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+
+        <!-- Emergency Response Tab -->
+        <div class="tab-panel" id="emergency-panel">
+            <div class="emergency-layout">
+                <aside class="emergency-sidebar">
+                    <div class="emergency-header">
+                        <h2>🚨 Emergency Response Zones</h2>
+                        <p>Coordinate disaster response teams</p>
+                    </div>
+
+                    <div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <h3 style="color: #DC143C; margin-bottom: 1rem;">Response Teams</h3>
+                        <div style="display: grid; gap: 0.5rem;">
+                            <div style="padding: 0.75rem; background: #DC143C; color: white; border-radius: 4px; font-weight: bold;">
+                                Alpha Team - Search & Rescue
+                            </div>
+                            <div style="padding: 0.75rem; background: #4169E1; color: white; border-radius: 4px; font-weight: bold;">
+                                Bravo Team - Medical
+                            </div>
+                            <div style="padding: 0.75rem; background: #FFD700; color: #333; border-radius: 4px; font-weight: bold;">
+                                Charlie Team - Shelters
+                            </div>
+                            <div style="padding: 0.75rem; background: #228B22; color: white; border-radius: 4px; font-weight: bold;">
+                                Delta Team - Supplies
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: white; padding: 1rem; border-radius: 8px;">
+                        <h3 style="color: #333; margin-bottom: 1rem;">Actions</h3>
+                        <button class="btn btn-danger" style="width: 100%; margin-bottom: 0.5rem;">
+                            Auto-Assign Teams
+                        </button>
+                        <button class="btn btn-primary" style="width: 100%; margin-bottom: 0.5rem;">
+                            Check Conflicts
+                        </button>
+                        <button class="btn btn-secondary" style="width: 100%;">
+                            Export Assignments
+                        </button>
+                    </div>
+                </aside>
+
+                <div class="emergency-main">
+                    <svg viewBox="0 0 900 600" style="width: 100%; background: white; border: 1px solid #ddd; border-radius: 8px;">
+                        <g id="emergencyZones">
+                            <!-- Emergency zones will be rendered here -->
+                        </g>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bivariate Mapping Tab -->
+        <div class="tab-panel" id="bivariate-panel">
+            <div class="bivariate-layout">
+                <h2>Bivariate Choropleth Mapping</h2>
+                <p>Visualize two variables simultaneously using color matrices</p>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 2rem 0;">
+                    <div>
+                        <h3>Variable Configuration</h3>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem;">X-Axis Variable:</label>
+                            <select style="width: 100%; padding: 0.5rem;">
+                                <option>Median Income</option>
+                                <option>Education Rate</option>
+                                <option>Population Density</option>
+                            </select>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem;">Y-Axis Variable:</label>
+                            <select style="width: 100%; padding: 0.5rem;">
+                                <option>Health Coverage</option>
+                                <option>Poverty Rate</option>
+                                <option>Unemployment</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%;">Generate Map</button>
+                    </div>
+
+                    <div>
+                        <h3>Bivariate Legend</h3>
+                        <div class="bivariate-legend-container">
+                            <div class="bivariate-legend" id="bivariateGradient">
+                                <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+                                    <defs>
+                                        <!-- Define gradients for each row -->
+                                        <linearGradient id="row1" x1="0%" y1="0%" x2="100%" y2="0%">
+                                            <stop offset="0%" style="stop-color:#e8e8e8" />
+                                            <stop offset="100%" style="stop-color:#c8b8d6" />
+                                        </linearGradient>
+                                        <linearGradient id="row2" x1="0%" y1="0%" x2="100%" y2="0%">
+                                            <stop offset="0%" style="stop-color:#b8d6be" />
+                                            <stop offset="100%" style="stop-color:#8070a8" />
+                                        </linearGradient>
+                                        <linearGradient id="row3" x1="0%" y1="0%" x2="100%" y2="0%">
+                                            <stop offset="0%" style="stop-color:#73ae80" />
+                                            <stop offset="100%" style="stop-color:#5a5a8b" />
+                                        </linearGradient>
+                                    </defs>
+                                    <!-- Create smooth bivariate gradient using multiple rectangles -->
+                                    <rect x="0" y="66" width="100" height="34" fill="url(#row1)" />
+                                    <rect x="0" y="66" width="100" height="34" fill="url(#row1)" opacity="1" />
+                                    <rect x="0" y="33" width="100" height="34" fill="url(#row2)" opacity="0.8" />
+                                    <rect x="0" y="0" width="100" height="34" fill="url(#row3)" opacity="0.9" />
+                                </svg>
+                                <!-- Corner labels -->
+                                <div class="legend-tick" style="bottom: -20px; left: -5px;">Low</div>
+                                <div class="legend-tick" style="bottom: -20px; right: -5px;">High</div>
+                                <div class="legend-tick" style="top: -20px; right: -5px;">High</div>
+                                <div class="legend-tick" style="left: -25px; bottom: -5px;">Low</div>
+                            </div>
+                            <div class="axis-label x-axis-label">Income →</div>
+                            <div class="axis-label y-axis-label">↑ Health</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: #f8f9fa; padding: 2rem; border-radius: 8px;">
+                    <svg viewBox="0 0 1000 600" style="width: 100%; background: white;">
+                        <g id="bivariateMap">
+                            <!-- Bivariate map will be rendered here -->
+                        </g>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historical Timeline Tab -->
+        <div class="tab-panel" id="timeline-panel">
+            <div class="timeline-layout">
+                <div class="timeline-container">
+                    <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 3rem;">
+                        The Four Color Theorem: A Historical Journey
+                    </h2>
+
+                    <div class="timeline-event">
+                        <div class="timeline-date">1852</div>
+                        <h3>Francis Guthrie's Discovery</h3>
+                        <p>While coloring a map of English counties, Guthrie noticed only four colors were needed.</p>
+                        <div style="margin: 1rem 0; padding: 1rem; background: #f0f0f0; border-radius: 8px;">
+                            <svg viewBox="0 0 400 300" style="width: 100%; max-width: 400px;">
+                                <!-- Simple England counties map -->
+                                <g id="englandCounties">
+                                    <rect x="50" y="50" width="80" height="60" fill="#ff6b6b" stroke="#333" stroke-width="2"/>
+                                    <rect x="130" y="50" width="80" height="60" fill="#4ecdc4" stroke="#333" stroke-width="2"/>
+                                    <rect x="210" y="50" width="80" height="60" fill="#ffd700" stroke="#333" stroke-width="2"/>
+                                    <rect x="50" y="110" width="80" height="60" fill="#4ecdc4" stroke="#333" stroke-width="2"/>
+                                    <rect x="130" y="110" width="80" height="60" fill="#ffd700" stroke="#333" stroke-width="2"/>
+                                    <rect x="210" y="110" width="80" height="60" fill="#ff6b6b" stroke="#333" stroke-width="2"/>
+                                </g>
+                                <text x="200" y="30" text-anchor="middle" font-size="16" font-weight="bold">English Counties</text>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="timeline-event">
+                        <div class="timeline-date">1879</div>
+                        <h3>Kempe's "Proof"</h3>
+                        <p>Alfred Kempe published what was believed to be a valid proof using chain arguments.</p>
+                        <div style="padding: 1rem; background: #fff3cd; border-radius: 8px; margin-top: 1rem;">
+                            <strong>Kempe Chains:</strong> Paths of alternating colors that can be swapped without conflicts.
+                        </div>
+                    </div>
+
+                    <div class="timeline-event">
+                        <div class="timeline-date">1890</div>
+                        <h3>Heawood Finds the Flaw</h3>
+                        <p>After 11 years, Percy Heawood discovered Kempe chains could interfere with each other.</p>
+                        <div style="padding: 1rem; background: #f8d7da; border-radius: 8px; margin-top: 1rem;">
+                            <strong>The Flaw:</strong> When a vertex has degree 5, Kempe chains aren't independent.
+                        </div>
+                    </div>
+
+                    <div class="timeline-event">
+                        <div class="timeline-date">1976</div>
+                        <h3>Computer-Assisted Proof</h3>
+                        <p>Appel & Haken proved the theorem by checking 1,936 configurations with a computer.</p>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem;">
+                            <div style="background: #d4edda; padding: 1rem; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 2rem; font-weight: bold;">1,936</div>
+                                <div>Configurations</div>
+                            </div>
+                            <div style="background: #d4edda; padding: 1rem; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 2rem; font-weight: bold;">1,200</div>
+                                <div>CPU Hours</div>
+                            </div>
+                            <div style="background: #d4edda; padding: 1rem; border-radius: 8px; text-align: center;">
+                                <div style="font-size: 2rem; font-weight: bold;">First</div>
+                                <div>Computer Proof</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Platform Tab -->
+        <div class="tab-panel" id="platform-panel">
+            <div class="platform-layout">
+                <aside class="platform-control">
+                    <h3 style="color: #64ffda; margin-bottom: 1rem;">Advanced Controls</h3>
+                    
+                    <div class="control-section">
+                        <h3>Data Source</h3>
+                        <div class="algorithm-list">
+                            <div class="algorithm-option">OpenStreetMap</div>
+                            <div class="algorithm-option">US Census</div>
+                            <div class="algorithm-option">Natural Earth</div>
+                            <div class="algorithm-option">Custom GeoJSON</div>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>Algorithm</h3>
+                        <div class="algorithm-list">
+                            <div class="algorithm-option active">
+                                <strong>DSATUR</strong>
+                                <div style="font-size: 0.75rem; opacity: 0.8;">O(n²) - Optimal for sparse</div>
+                            </div>
+                            <div class="algorithm-option">
+                                <strong>Kempe Chain</strong>
+                                <div style="font-size: 0.75rem; opacity: 0.8;">O(n³) - Guarantees minimal</div>
+                            </div>
+                            <div class="algorithm-option">
+                                <strong>ML-Assisted</strong>
+                                <div style="font-size: 0.75rem; opacity: 0.8;">Neural network prediction</div>
+                            </div>
+                            <div class="algorithm-option">
+                                <strong>Quantum-Inspired</strong>
+                                <div style="font-size: 0.75rem; opacity: 0.8;">Simulated annealing</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>Performance</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value">12.4K</div>
+                                <div class="stat-label">Vertices</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">38.7K</div>
+                                <div class="stat-label">Edges</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">60</div>
+                                <div class="stat-label">FPS</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">124MB</div>
+                                <div class="stat-label">Memory</div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <div class="platform-main">
+                    <div id="advancedMap" style="width: 100%; height: 100%;"></div>
+                </div>
+
+                <aside class="platform-analytics">
+                    <h3 style="color: #64ffda; margin-bottom: 1rem;">Analytics</h3>
+                    
+                    <div style="background: rgba(100, 255, 218, 0.1); border: 1px solid rgba(100, 255, 218, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                        <h4 style="font-size: 0.875rem; margin-bottom: 0.5rem;">ML Insights</h4>
+                        <div style="font-size: 0.875rem;">
+                            <div style="margin-bottom: 0.5rem;">✓ 5 communities detected</div>
+                            <div style="margin-bottom: 0.5rem;">✓ Optimal coloring found</div>
+                            <div>✓ Scale-free network</div>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 8px; padding: 1rem;">
+                        <h4 style="font-size: 0.875rem; margin-bottom: 0.5rem;">Graph Metrics</h4>
+                        <div style="font-size: 0.875rem;">
+                            <div style="margin-bottom: 0.5rem;">Clustering: 0.68</div>
+                            <div style="margin-bottom: 0.5rem;">Path Length: 3.2</div>
+                            <div>Modularity: 0.42</div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+
+        <!-- Theory Tab -->
+        <div class="tab-panel" id="theory-panel">
+            <div style="max-width: 1200px; margin: 0 auto; padding: 2rem; background: white; color: #333; min-height: 100%;">
+                <h2>The Four Color Theorem: Theory & Algorithms</h2>
+                
+                <div style="background: #fff9e6; padding: 1.5rem; border-radius: 8px; margin: 2rem 0; border-left: 4px solid #ffd700;">
+                    <h3>Formal Statement</h3>
+                    <p><strong>The Four Color Theorem:</strong> Every planar graph is 4-colorable. That is, the vertices of any planar graph can be colored using at most four colors such that no two adjacent vertices share the same color.</p>
+                </div>
+
+                <h3>Algorithms</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                        <h4>DSATUR</h4>
+                        <p style="font-size: 0.875rem;">Selects vertices by saturation degree - the number of different colors in their neighborhood.</p>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                        <h4>Welsh-Powell</h4>
+                        <p style="font-size: 0.875rem;">Orders vertices by degree and colors greedily in that order.</p>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                        <h4>Backtracking</h4>
+                        <p style="font-size: 0.875rem;">Exhaustive search with pruning to find optimal coloring.</p>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                        <h4>Kempe Chains</h4>
+                        <p style="font-size: 0.875rem;">Swaps colors along alternating paths to reduce chromatic number.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Import Tab -->
+        <div class="tab-panel" id="data-panel">
+            <div style="max-width: 1200px; margin: 0 auto; padding: 2rem; background: white; color: #333; min-height: 100%;">
+                <h2>Data Import</h2>
+                
+                <div style="background: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 8px; padding: 3rem; text-align: center; margin: 2rem 0;">
+                    <p style="font-size: 1.25rem; margin-bottom: 1rem;">Drag and drop files here</p>
+                    <p style="color: #6c757d; margin-bottom: 1rem;">or</p>
+                    <button class="btn btn-primary">Browse Files</button>
+                    <p style="font-size: 0.875rem; color: #6c757d; margin-top: 1rem;">
+                        Supports: GeoJSON, CSV, GraphML, GEXF
+                    </p>
+                </div>
+
+                <h3>Supported Formats</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                        <h4>GeoJSON</h4>
+                        <code style="font-size: 0.75rem;">FeatureCollection</code>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                        <h4>Graph JSON</h4>
+                        <code style="font-size: 0.75rem;">{"nodes": [], "edges": []}</code>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                        <h4>CSV</h4>
+                        <code style="font-size: 0.75rem;">source,target,weight</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Playground Tab -->
+        <div class="tab-panel" id="playground-panel">
+            <div style="max-width: 1200px; margin: 0 auto; padding: 2rem; background: white; color: #333; min-height: 100%;">
+                <h2>Interactive Playground</h2>
+                <p>Experiment with graph coloring in a sandbox environment</p>
+                
+                <div style="display: grid; grid-template-columns: 200px 1fr; gap: 2rem; margin-top: 2rem;">
+                    <div>
+                        <h3>Tools</h3>
+                        <div style="display: grid; gap: 0.5rem;">
+                            <button class="btn btn-primary">Add Node</button>
+                            <button class="btn btn-primary">Add Edge</button>
+                            <button class="btn btn-secondary">Delete</button>
+                            <button class="btn btn-danger">Clear All</button>
+                        </div>
+                        
+                        <h3 style="margin-top: 2rem;">Colors</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                            <div style="width: 100%; height: 40px; background: #ff6b6b; border-radius: 4px; cursor: pointer;"></div>
+                            <div style="width: 100%; height: 40px; background: #4ecdc4; border-radius: 4px; cursor: pointer;"></div>
+                            <div style="width: 100%; height: 40px; background: #45b7d1; border-radius: 4px; cursor: pointer;"></div>
+                            <div style="width: 100%; height: 40px; background: #ffd700; border-radius: 4px; cursor: pointer;"></div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; border-radius: 8px; padding: 2rem;">
+                        <svg viewBox="0 0 800 600" style="width: 100%; background: white; border: 1px solid #ddd;">
+                            <g id="playgroundGraph">
+                                <!-- Interactive graph -->
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.dataset.tab;
+                
+                // Update active tab button
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Update active panel
+                document.querySelectorAll('.tab-panel').forEach(panel => {
+                    panel.classList.remove('active');
+                });
+                document.getElementById(`${tabId}-panel`).classList.add('active');
+                
+                // Update global stats based on active tab
+                updateGlobalStats(tabId);
+            });
+        });
+
+        // Initialize classic graph
+        function initClassicGraph() {
+            const svg = document.getElementById('classicGraph');
+            
+            // Create sample graph
+            const nodes = [
+                {id: 0, x: 200, y: 100},
+                {id: 1, x: 400, y: 100},
+                {id: 2, x: 600, y: 100},
+                {id: 3, x: 200, y: 300},
+                {id: 4, x: 400, y: 300},
+                {id: 5, x: 600, y: 300},
+                {id: 6, x: 200, y: 500},
+                {id: 7, x: 400, y: 500},
+                {id: 8, x: 600, y: 500}
+            ];
+            
+            const edges = [
+                [0, 1], [1, 2], [0, 3], [1, 4], [2, 5],
+                [3, 4], [4, 5], [3, 6], [4, 7], [5, 8],
+                [6, 7], [7, 8]
+            ];
+            
+            // Draw edges
+            edges.forEach(([i, j]) => {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', nodes[i].x);
+                line.setAttribute('y1', nodes[i].y);
+                line.setAttribute('x2', nodes[j].x);
+                line.setAttribute('y2', nodes[j].y);
+                line.setAttribute('stroke', '#333');
+                line.setAttribute('stroke-width', '2');
+                svg.appendChild(line);
+            });
+            
+            // Draw nodes
+            const colors = ['#E63946', '#457B9D', '#F1C40F', '#27AE60'];
+            nodes.forEach((node, i) => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', node.x);
+                circle.setAttribute('cy', node.y);
+                circle.setAttribute('r', '30');
+                circle.setAttribute('fill', colors[i % 4]);
+                circle.setAttribute('stroke', '#333');
+                circle.setAttribute('stroke-width', '2');
+                circle.style.cursor = 'pointer';
+                svg.appendChild(circle);
+                
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', node.x);
+                text.setAttribute('y', node.y + 5);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('fill', 'white');
+                text.setAttribute('font-weight', 'bold');
+                text.setAttribute('font-size', '16');
+                text.textContent = node.id + 1;
+                svg.appendChild(text);
+            });
+        }
+
+        // Initialize emergency zones
+        function initEmergencyZones() {
+            const svg = document.getElementById('emergencyZones');
+            
+            const zones = [
+                {id: 'Z1', name: 'Coastal', x: 150, y: 200, priority: 'critical'},
+                {id: 'Z2', name: 'Medical', x: 300, y: 150, priority: 'critical'},
+                {id: 'Z3', name: 'Downtown', x: 450, y: 200, priority: 'high'},
+                {id: 'Z4', name: 'Industrial', x: 600, y: 150, priority: 'medium'},
+                {id: 'Z5', name: 'Residential N', x: 300, y: 300, priority: 'high'},
+                {id: 'Z6', name: 'Residential S', x: 450, y: 350, priority: 'high'},
+                {id: 'Z7', name: 'Airport', x: 600, y: 300, priority: 'critical'},
+                {id: 'Z8', name: 'Harbor', x: 150, y: 350, priority: 'medium'}
+            ];
+            
+            const edges = [
+                [0, 1], [0, 4], [0, 7], [1, 2], [1, 4],
+                [2, 3], [2, 4], [2, 5], [3, 6], [4, 5],
+                [4, 7], [5, 6]
+            ];
+            
+            const teamColors = ['#DC143C', '#4169E1', '#FFD700', '#228B22'];
+            
+            // Draw edges
+            edges.forEach(([i, j]) => {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', zones[i].x);
+                line.setAttribute('y1', zones[i].y);
+                line.setAttribute('x2', zones[j].x);
+                line.setAttribute('y2', zones[j].y);
+                line.setAttribute('stroke', '#999');
+                line.setAttribute('stroke-width', '2');
+                line.setAttribute('stroke-dasharray', '5,5');
+                svg.appendChild(line);
+            });
+            
+            // Draw zones
+            zones.forEach((zone, i) => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', zone.x);
+                circle.setAttribute('cy', zone.y);
+                circle.setAttribute('r', '40');
+                circle.setAttribute('fill', teamColors[i % 4]);
+                circle.setAttribute('stroke', zone.priority === 'critical' ? '#DC143C' : '#666');
+                circle.setAttribute('stroke-width', zone.priority === 'critical' ? '4' : '2');
+                circle.style.cursor = 'pointer';
+                svg.appendChild(circle);
+                
+                // Zone name
+                const nameText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                nameText.setAttribute('x', zone.x);
+                nameText.setAttribute('y', zone.y - 50);
+                nameText.setAttribute('text-anchor', 'middle');
+                nameText.setAttribute('font-size', '12');
+                nameText.setAttribute('font-weight', 'bold');
+                nameText.textContent = zone.name;
+                svg.appendChild(nameText);
+                
+                // Zone ID
+                const idText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                idText.setAttribute('x', zone.x);
+                idText.setAttribute('y', zone.y + 5);
+                idText.setAttribute('text-anchor', 'middle');
+                idText.setAttribute('fill', 'white');
+                idText.setAttribute('font-weight', 'bold');
+                idText.setAttribute('font-size', '20');
+                idText.textContent = zone.id;
+                svg.appendChild(idText);
+            });
+        }
+
+        // Update global statistics
+        function updateGlobalStats(tab) {
+            const stats = {
+                classic: { nodes: 9, colors: 4, time: '0.3ms' },
+                emergency: { nodes: 8, colors: 4, time: '0.2ms' },
+                bivariate: { nodes: 25, colors: 9, time: '0.5ms' },
+                platform: { nodes: '12.4K', colors: 4, time: '23ms' }
+            };
+            
+            const currentStats = stats[tab] || { nodes: '-', colors: '-', time: '-' };
+            document.getElementById('globalNodes').textContent = currentStats.nodes;
+            document.getElementById('globalColors').textContent = currentStats.colors;
+            document.getElementById('globalTime').textContent = currentStats.time;
+        }
+
+        // Initialize bivariate gradient
+        function initBivariateGradient() {
+            const svg = document.querySelector('#bivariateGradient svg');
+            if (!svg) return;
+            
+            // Clear existing content
+            svg.innerHTML = '';
+            
+            // Create a proper 2D gradient using small cells
+            const gridSize = 20; // Create a 20x20 grid for smooth gradient
+            const cellWidth = 100 / gridSize;
+            const cellHeight = 100 / gridSize;
+            
+            for (let y = 0; y < gridSize; y++) {
+                for (let x = 0; x < gridSize; x++) {
+                    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    rect.setAttribute('x', x * cellWidth);
+                    rect.setAttribute('y', (gridSize - y - 1) * cellHeight); // Flip Y axis
+                    rect.setAttribute('width', cellWidth);
+                    rect.setAttribute('height', cellHeight);
+                    
+                    // Calculate bivariate color
+                    const xRatio = x / (gridSize - 1);
+                    const yRatio = y / (gridSize - 1);
+                    const color = getBivariateColor(xRatio, yRatio);
+                    rect.setAttribute('fill', color);
+                    
+                    svg.appendChild(rect);
+                }
+            }
+        }
+        
+        // Calculate bivariate color based on two variables
+        function getBivariateColor(x, y) {
+            // Color scheme: 
+            // Bottom-left (0,0): Light gray (#e8e8e8)
+            // Bottom-right (1,0): Light purple (#c8b8d6)
+            // Top-left (0,1): Light green (#73ae80)
+            // Top-right (1,1): Dark purple (#5a5a8b)
+            
+            // Define corner colors in RGB
+            const bottomLeft = {r: 232, g: 232, b: 232};  // #e8e8e8
+            const bottomRight = {r: 200, g: 184, b: 214}; // #c8b8d6
+            const topLeft = {r: 115, g: 174, b: 128};     // #73ae80
+            const topRight = {r: 90, g: 90, b: 139};      // #5a5a8b
+            
+            // Bilinear interpolation
+            const bottom = {
+                r: bottomLeft.r * (1 - x) + bottomRight.r * x,
+                g: bottomLeft.g * (1 - x) + bottomRight.g * x,
+                b: bottomLeft.b * (1 - x) + bottomRight.b * x
+            };
+            
+            const top = {
+                r: topLeft.r * (1 - x) + topRight.r * x,
+                g: topLeft.g * (1 - x) + topRight.g * x,
+                b: topLeft.b * (1 - x) + topRight.b * x
+            };
+            
+            const final = {
+                r: Math.round(bottom.r * (1 - y) + top.r * y),
+                g: Math.round(bottom.g * (1 - y) + top.g * y),
+                b: Math.round(bottom.b * (1 - y) + top.b * y)
+            };
+            
+            return `rgb(${final.r}, ${final.g}, ${final.b})`;
+        }
+        
+        // Initialize bivariate map
+        function initBivariateMap() {
+            const svg = document.getElementById('bivariateMap');
+            if (!svg) return;
+            
+            // Create sample regions with bivariate data
+            const regions = [
+                {x: 100, y: 100, width: 150, height: 100, xVal: 0.2, yVal: 0.8},
+                {x: 250, y: 100, width: 150, height: 100, xVal: 0.5, yVal: 0.6},
+                {x: 400, y: 100, width: 150, height: 100, xVal: 0.8, yVal: 0.4},
+                {x: 550, y: 100, width: 150, height: 100, xVal: 0.3, yVal: 0.3},
+                {x: 100, y: 200, width: 150, height: 100, xVal: 0.6, yVal: 0.7},
+                {x: 250, y: 200, width: 150, height: 100, xVal: 0.9, yVal: 0.9},
+                {x: 400, y: 200, width: 150, height: 100, xVal: 0.1, yVal: 0.2},
+                {x: 550, y: 200, width: 150, height: 100, xVal: 0.7, yVal: 0.5},
+                {x: 100, y: 300, width: 150, height: 100, xVal: 0.4, yVal: 0.1},
+                {x: 250, y: 300, width: 150, height: 100, xVal: 0.5, yVal: 0.5},
+                {x: 400, y: 300, width: 150, height: 100, xVal: 0.8, yVal: 0.8},
+                {x: 550, y: 300, width: 150, height: 100, xVal: 0.2, yVal: 0.6},
+                {x: 100, y: 400, width: 150, height: 100, xVal: 0.9, yVal: 0.2},
+                {x: 250, y: 400, width: 150, height: 100, xVal: 0.3, yVal: 0.9},
+                {x: 400, y: 400, width: 150, height: 100, xVal: 0.6, yVal: 0.4},
+                {x: 550, y: 400, width: 150, height: 100, xVal: 0.1, yVal: 0.7}
+            ];
+            
+            // Draw regions with bivariate colors
+            regions.forEach(region => {
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('x', region.x);
+                rect.setAttribute('y', region.y);
+                rect.setAttribute('width', region.width);
+                rect.setAttribute('height', region.height);
+                rect.setAttribute('fill', getBivariateColor(region.xVal, region.yVal));
+                rect.setAttribute('stroke', '#333');
+                rect.setAttribute('stroke-width', '1');
+                svg.appendChild(rect);
+            });
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            initClassicGraph();
+            initEmergencyZones();
+            initBivariateGradient();
+            initBivariateMap();
+            updateGlobalStats('classic');
+        });
+    </script>
+</body>
+</html>
