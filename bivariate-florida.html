@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bivariate Choropleth - Florida Counties Analysis</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/topojson@3"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            min-height: 600px;
+        }
+
+        .controls {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-right: 1px solid #dee2e6;
+        }
+
+        .control-section {
+            margin-bottom: 2rem;
+        }
+
+        .control-section h3 {
+            font-size: 1rem;
+            color: #495057;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            transform: scale(1.02);
+        }
+
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #dee2e6;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            background: white;
+            font-size: 0.875rem;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .map-container {
+            padding: 2rem;
+            position: relative;
+        }
+
+        #map {
+            width: 100%;
+            height: 600px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .bivariate-legend-container {
+            position: absolute;
+            bottom: 3rem;
+            right: 3rem;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .bivariate-legend {
+            width: 150px;
+            height: 150px;
+            position: relative;
+            border: 2px solid #333;
+        }
+
+        .legend-labels {
+            position: relative;
+            margin-top: 1rem;
+        }
+
+        .axis-label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .x-label {
+            text-align: center;
+        }
+
+        .y-label {
+            position: absolute;
+            left: -40px;
+            top: -80px;
+            transform: rotate(-90deg);
+            transform-origin: center;
+        }
+
+        .tooltip {
+            position: absolute;
+            padding: 0.75rem;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            border-radius: 4px;
+            pointer-events: none;
+            font-size: 0.875rem;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+
+        .data-table {
+            margin-top: 1rem;
+            width: 100%;
+            font-size: 0.75rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .county-boundary {
+            fill: #e0e0e0;
+            stroke: #999;
+            stroke-width: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .county-boundary:hover {
+            stroke: #333;
+            stroke-width: 2px;
+            filter: brightness(1.1);
+        }
+
+        .instructions {
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .variable-info {
+            background: #f8f9fa;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗺️ Bivariate Choropleth Mapper</h1>
+            <p>Visualize two variables simultaneously across Florida counties</p>
+        </div>
+
+        <div class="main-content">
+            <div class="controls">
+                <div class="instructions">
+                    <strong>How to use:</strong><br>
+                    1. Upload your CSV file with county data<br>
+                    2. Select two variables to compare<br>
+                    3. View the bivariate relationships on the map
+                </div>
+
+                <div class="control-section">
+                    <h3>📁 Data Upload</h3>
+                    <div class="upload-area" id="uploadArea" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                        <input type="file" id="fileInput" accept=".csv" style="display: none;" onchange="handleFileSelect(event)">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📊</div>
+                        <p style="margin-bottom: 1rem;">Drop CSV file here</p>
+                        <button class="btn" onclick="document.getElementById('fileInput').click()">
+                            Browse Files
+                        </button>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <button class="btn btn-secondary" onclick="loadExampleData()">
+                            Load Florida Example Data
+                        </button>
+                    </div>
+                </div>
+
+                <div class="control-section" id="variableSection" style="display: none;">
+                    <h3>📈 Variable Selection</h3>
+                    
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">X-Axis Variable:</label>
+                    <select id="xVariable"></select>
+                    <div class="variable-info" id="xInfo"></div>
+                    
+                    <label style="display: block; margin: 1rem 0 0.5rem; font-weight: 500;">Y-Axis Variable:</label>
+                    <select id="yVariable"></select>
+                    <div class="variable-info" id="yInfo"></div>
+                    
+                    <button class="btn" onclick="updateMap()" style="margin-top: 1rem;">
+                        Update Map
+                    </button>
+                </div>
+
+                <div class="control-section" id="statsSection" style="display: none;">
+                    <h3>📊 Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="countyStat">0</div>
+                            <div class="stat-label">Counties</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="correlationStat">0</div>
+                            <div class="stat-label">Correlation</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section" id="dataPreview" style="display: none;">
+                    <h3>📋 Data Preview</h3>
+                    <div style="max-height: 200px; overflow-y: auto;">
+                        <table class="data-table" id="previewTable">
+                            <thead></thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="map-container">
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 1rem;">Loading map data...</p>
+                </div>
+                
+                <svg id="map"></svg>
+                
+                <div class="bivariate-legend-container" style="display: none;" id="legendContainer">
+                    <h4 style="margin-bottom: 1rem; text-align: center;">Legend</h4>
+                    <div class="bivariate-legend">
+                        <svg id="legendSvg" viewBox="0 0 100 100" style="width: 100%; height: 100%;"></svg>
+                    </div>
+                    <div class="legend-labels">
+                        <div class="axis-label x-label" id="xLegendLabel">Variable X →</div>
+                        <div class="axis-label y-label" id="yLegendLabel">Variable Y ↑</div>
+                    </div>
+                </div>
+
+                <div class="tooltip" id="tooltip"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let csvData = [];
+        let geoData = null;
+        let currentMap = null;
+        let variables = [];
+        let floridaCounties = null;
+
+        // Bivariate color scheme
+        function getBivariateColor(xValue, yValue) {
+            // Normalize values to 0-1 range
+            const x = Math.max(0, Math.min(1, xValue));
+            const y = Math.max(0, Math.min(1, yValue));
+            
+            // Define corner colors
+            const colors = {
+                lowlow: [232, 232, 232],    // Light gray
+                lowhigh: [115, 174, 128],   // Green
+                highlow: [200, 184, 214],   // Purple
+                highhigh: [90, 90, 139]     // Dark purple
+            };
+            
+            // Bilinear interpolation
+            const bottom = interpolateColor(colors.lowlow, colors.highlow, x);
+            const top = interpolateColor(colors.lowhigh, colors.highhigh, x);
+            const final = interpolateColor(bottom, top, y);
+            
+            return `rgb(${Math.round(final[0])}, ${Math.round(final[1])}, ${Math.round(final[2])})`;
+        }
+
+        function interpolateColor(color1, color2, t) {
+            return [
+                color1[0] * (1 - t) + color2[0] * t,
+                color1[1] * (1 - t) + color2[1] * t,
+                color1[2] * (1 - t) + color2[2] * t
+            ];
+        }
+
+        // Create bivariate legend
+        function createLegend() {
+            const svg = d3.select('#legendSvg');
+            svg.selectAll('*').remove();
+            
+            const gridSize = 20;
+            const cellSize = 100 / gridSize;
+            
+            for (let y = 0; y < gridSize; y++) {
+                for (let x = 0; x < gridSize; x++) {
+                    svg.append('rect')
+                        .attr('x', x * cellSize)
+                        .attr('y', (gridSize - y - 1) * cellSize)
+                        .attr('width', cellSize)
+                        .attr('height', cellSize)
+                        .attr('fill', getBivariateColor(x / (gridSize - 1), y / (gridSize - 1)));
+                }
+            }
+            
+            // Add corner labels
+            svg.append('text')
+                .attr('x', 2)
+                .attr('y', 98)
+                .attr('font-size', '8')
+                .attr('fill', '#666')
+                .text('Low');
+            
+            svg.append('text')
+                .attr('x', 82)
+                .attr('y', 98)
+                .attr('font-size', '8')
+                .attr('fill', '#666')
+                .text('High');
+            
+            svg.append('text')
+                .attr('x', 2)
+                .attr('y', 10)
+                .attr('font-size', '8')
+                .attr('fill', '#666')
+                .text('High');
+            
+            svg.append('text')
+                .attr('x', 2)
+                .attr('y', 98)
+                .attr('font-size', '8')
+                .attr('fill', '#666')
+                .text('Low');
+        }
+
+        // Load Florida counties GeoJSON
+        async function loadFloridaCounties() {
+            document.getElementById('loading').classList.add('show');
+            
+            try {
+                // Try to load from TopoJSON US Atlas
+                const response = await fetch('https://cdn.jsdelivr.net/npm/us-atlas@3/counties-10m.json');
+                const us = await response.json();
+                
+                // Filter for Florida counties (FIPS codes starting with 12)
+                const floridaFeatures = topojson.feature(us, us.objects.counties).features
+                    .filter(d => d.id && d.id.toString().startsWith('12'));
+                
+                if (floridaFeatures.length > 0) {
+                    floridaCounties = {
+                        type: "FeatureCollection",
+                        features: floridaFeatures
+                    };
+                    console.log(`Loaded ${floridaFeatures.length} Florida counties`);
+                } else {
+                    // Fallback: create placeholder rectangles
+                    createPlaceholderCounties();
+                }
+            } catch (error) {
+                console.error('Error loading county data:', error);
+                createPlaceholderCounties();
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+            }
+        }
+
+        // Create placeholder counties if real data unavailable
+        function createPlaceholderCounties() {
+            const counties = [];
+            const rows = 8;
+            const cols = 10;
+            
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    counties.push({
+                        type: "Feature",
+                        id: `120${String(i * cols + j).padStart(2, '0')}`,
+                        properties: {
+                            name: `County ${i * cols + j + 1}`
+                        },
+                        geometry: {
+                            type: "Polygon",
+                            coordinates: [[
+                                [j * 10, i * 10],
+                                [(j + 1) * 10, i * 10],
+                                [(j + 1) * 10, (i + 1) * 10],
+                                [j * 10, (i + 1) * 10],
+                                [j * 10, i * 10]
+                            ]]
+                        }
+                    });
+                }
+            }
+            
+            floridaCounties = {
+                type: "FeatureCollection",
+                features: counties
+            };
+        }
+
+        // File handling
+        function handleDrop(e) {
+            e.preventDefault();
+            document.getElementById('uploadArea').classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].name.endsWith('.csv')) {
+                processFile(files[0]);
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            document.getElementById('uploadArea').classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            document.getElementById('uploadArea').classList.remove('dragover');
+        }
+
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        }
+
+        function processFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                parseCSV(text);
+            };
+            reader.readAsText(file);
+        }
+
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            
+            csvData = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',');
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index] ? values[index].trim() : '';
+                });
+                csvData.push(row);
+            }
+            
+            // Identify numeric variables
+            variables = headers.filter(header => {
+                if (header.toLowerCase() === 'fips' || header.toLowerCase() === 'county') return false;
+                return csvData.every(row => !isNaN(parseFloat(row[header])));
+            });
+            
+            updateVariableSelects();
+            showDataPreview();
+            updateStatistics();
+        }
+
+        function updateVariableSelects() {
+            const xSelect = document.getElementById('xVariable');
+            const ySelect = document.getElementById('yVariable');
+            
+            xSelect.innerHTML = '';
+            ySelect.innerHTML = '';
+            
+            variables.forEach((variable, index) => {
+                xSelect.innerHTML += `<option value="${variable}">${variable}</option>`;
+                ySelect.innerHTML += `<option value="${variable}">${variable}</option>`;
+            });
+            
+            // Select different defaults
+            if (variables.length > 1) {
+                ySelect.selectedIndex = 1;
+            }
+            
+            document.getElementById('variableSection').style.display = 'block';
+            document.getElementById('statsSection').style.display = 'block';
+        }
+
+        function showDataPreview() {
+            const table = document.getElementById('previewTable');
+            const thead = table.querySelector('thead');
+            const tbody = table.querySelector('tbody');
+            
+            // Clear existing
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+            
+            // Add headers
+            const headerRow = thead.insertRow();
+            Object.keys(csvData[0]).forEach(key => {
+                const th = document.createElement('th');
+                th.textContent = key;
+                headerRow.appendChild(th);
+            });
+            
+            // Add first 5 rows
+            csvData.slice(0, 5).forEach(row => {
+                const tr = tbody.insertRow();
+                Object.values(row).forEach(value => {
+                    const td = tr.insertCell();
+                    td.textContent = value;
+                });
+            });
+            
+            document.getElementById('dataPreview').style.display = 'block';
+        }
+
+        function updateStatistics() {
+            document.getElementById('countyStat').textContent = csvData.length;
+            
+            // Calculate correlation if both variables selected
+            const xVar = document.getElementById('xVariable').value;
+            const yVar = document.getElementById('yVariable').value;
+            
+            if (xVar && yVar) {
+                const correlation = calculateCorrelation(xVar, yVar);
+                document.getElementById('correlationStat').textContent = correlation.toFixed(3);
+            }
+        }
+
+        function calculateCorrelation(xVar, yVar) {
+            const xValues = csvData.map(d => parseFloat(d[xVar])).filter(v => !isNaN(v));
+            const yValues = csvData.map(d => parseFloat(d[yVar])).filter(v => !isNaN(v));
+            
+            const n = Math.min(xValues.length, yValues.length);
+            const xMean = xValues.reduce((a, b) => a + b, 0) / n;
+            const yMean = yValues.reduce((a, b) => a + b, 0) / n;
+            
+            let numerator = 0;
+            let xDenominator = 0;
+            let yDenominator = 0;
+            
+            for (let i = 0; i < n; i++) {
+                const xDiff = xValues[i] - xMean;
+                const yDiff = yValues[i] - yMean;
+                numerator += xDiff * yDiff;
+                xDenominator += xDiff * xDiff;
+                yDenominator += yDiff * yDiff;
+            }
+            
+            return numerator / Math.sqrt(xDenominator * yDenominator);
+        }
+
+        function updateMap() {
+            if (!csvData.length || !floridaCounties) return;
+            
+            const xVar = document.getElementById('xVariable').value;
+            const yVar = document.getElementById('yVariable').value;
+            
+            // Update legend labels
+            document.getElementById('xLegendLabel').textContent = xVar + ' →';
+            document.getElementById('yLegendLabel').textContent = yVar + ' ↑';
+            
+            // Update info boxes
+            const xValues = csvData.map(d => parseFloat(d[xVar])).filter(v => !isNaN(v));
+            const yValues = csvData.map(d => parseFloat(d[yVar])).filter(v => !isNaN(v));
+            
+            document.getElementById('xInfo').innerHTML = `
+                Min: ${Math.min(...xValues).toFixed(0)} | 
+                Max: ${Math.max(...xValues).toFixed(0)} | 
+                Avg: ${(xValues.reduce((a,b) => a+b, 0) / xValues.length).toFixed(0)}
+            `;
+            
+            document.getElementById('yInfo').innerHTML = `
+                Min: ${Math.min(...yValues).toFixed(0)} | 
+                Max: ${Math.max(...yValues).toFixed(0)} | 
+                Avg: ${(yValues.reduce((a,b) => a+b, 0) / yValues.length).toFixed(0)}
+            `;
+            
+            // Create map
+            createMap(xVar, yVar);
+            
+            // Show legend
+            document.getElementById('legendContainer').style.display = 'block';
+            createLegend();
+            
+            updateStatistics();
+        }
+
+        function createMap(xVar, yVar) {
+            const svg = d3.select('#map');
+            svg.selectAll('*').remove();
+            
+            const width = svg.node().getBoundingClientRect().width;
+            const height = 600;
+            
+            svg.attr('viewBox', `0 0 ${width} ${height}`);
+            
+            // Get value ranges
+            const xValues = csvData.map(d => parseFloat(d[xVar])).filter(v => !isNaN(v));
+            const yValues = csvData.map(d => parseFloat(d[yVar])).filter(v => !isNaN(v));
+            
+            const xMin = Math.min(...xValues);
+            const xMax = Math.max(...xValues);
+            const yMin = Math.min(...yValues);
+            const yMax = Math.max(...yValues);
+            
+            // Create FIPS to data lookup
+            const dataByFips = {};
+            csvData.forEach(row => {
+                const fips = row.FIPS || row.fips;
+                if (fips) {
+                    dataByFips[fips] = row;
+                }
+            });
+            
+            // Create projection
+            const projection = d3.geoMercator()
+                .fitSize([width, height], floridaCounties);
+            
+            const path = d3.geoPath().projection(projection);
+            
+            // Draw counties
+            svg.selectAll('path')
+                .data(floridaCounties.features)
+                .enter()
+                .append('path')
+                .attr('class', 'county-boundary')
+                .attr('d', path)
+                .attr('fill', d => {
+                    const fips = d.id || d.properties.FIPS;
+                    const data = dataByFips[fips];
+                    
+                    if (data) {
+                        const xVal = parseFloat(data[xVar]);
+                        const yVal = parseFloat(data[yVar]);
+                        
+                        if (!isNaN(xVal) && !isNaN(yVal)) {
+                            const xNorm = (xVal - xMin) / (xMax - xMin);
+                            const yNorm = (yVal - yMin) / (yMax - yMin);
+                            return getBivariateColor(xNorm, yNorm);
+                        }
+                    }
+                    return '#e0e0e0';
+                })
+                .on('mouseover', function(event, d) {
+                    const fips = d.id || d.properties.FIPS;
+                    const data = dataByFips[fips];
+                    
+                    if (data) {
+                        const tooltip = document.getElementById('tooltip');
+                        tooltip.innerHTML = `
+                            <strong>${data.County || 'County ' + fips}</strong><br>
+                            ${xVar}: ${data[xVar]}<br>
+                            ${yVar}: ${data[yVar]}
+                        `;
+                        tooltip.style.left = event.pageX + 10 + 'px';
+                        tooltip.style.top = event.pageY + 10 + 'px';
+                        tooltip.classList.add('show');
+                    }
+                })
+                .on('mouseout', function() {
+                    document.getElementById('tooltip').classList.remove('show');
+                });
+        }
+
+        // Load example data
+        function loadExampleData() {
+            const exampleCSV = `FIPS,County,ALICE_Households,Poverty_Households,Total_Households,Median_Income,Education_Rate,Health_Coverage,Unemployment_Rate
+12001,Alachua,24323,18181,78608,45234,82.3,89.2,4.2
+12003,Baker,912,370,2217,38456,65.4,72.3,5.8
+12005,Bay,3971,1673,17154,42567,71.2,81.5,4.9
+12007,Bradford,319,239,1358,35678,59.8,68.9,6.2
+12009,Brevard,15234,8923,45123,52345,78.9,86.7,3.8
+12011,Broward,45234,23421,123456,58123,81.2,88.4,3.5
+12013,Calhoun,234,123,567,32456,54.3,65.2,7.1
+12015,Charlotte,3456,2345,12345,48567,72.8,83.4,4.3
+12017,Citrus,4567,3456,23456,41234,68.9,79.8,5.2
+12019,Clay,5678,4567,34567,55678,76.5,85.3,3.9
+12021,Collier,12345,6789,67890,65432,83.5,90.2,3.2
+12023,Columbia,2345,1234,12345,39876,64.7,74.5,5.5
+12027,DeSoto,1234,789,5678,36789,58.2,69.8,6.8
+12029,Dixie,456,234,2345,33456,52.1,62.3,7.5
+12031,Duval,67890,34567,234567,51234,75.8,84.2,4.1
+12033,Escambia,23456,12345,89012,44567,70.3,80.5,4.7
+12035,Flagler,5678,2345,23456,49876,74.2,82.8,4.4
+12037,Franklin,789,456,3456,35678,57.8,67.2,6.9
+12039,Gadsden,3456,2345,12345,34567,56.3,66.8,7.2
+12041,Gilchrist,567,345,2345,37890,60.2,70.5,6.1
+12043,Glades,234,156,1234,33789,53.7,63.1,7.8
+12045,Gulf,345,234,1567,36234,59.1,68.7,6.5
+12047,Hamilton,678,456,2789,35123,55.8,65.9,7.3
+12049,Hardee,789,567,3456,34789,54.2,64.5,7.6
+12051,Hendry,1234,890,4567,36456,57.3,67.8,6.7
+12053,Hernando,8901,5678,34567,43789,69.8,78.9,5.1
+12055,Highlands,5678,3456,23456,38901,63.2,73.5,5.9
+12057,Hillsborough,89012,45678,345678,54321,77.8,85.8,3.7
+12059,Holmes,456,234,1890,32678,51.8,61.9,8.1
+12061,Indian River,7890,4567,34567,50123,74.5,83.2,4.2
+12063,Jackson,2345,1567,8901,36789,58.9,68.3,6.4
+12065,Jefferson,234,156,890,38456,62.1,71.8,5.7
+12067,Lafayette,123,89,456,34123,53.2,62.7,7.9
+12069,Lake,12345,7890,56789,46789,71.8,81.2,4.6
+12071,Lee,23456,12345,89012,49567,73.5,82.1,4.5
+12073,Leon,23456,15678,78901,47890,79.3,86.3,3.6
+12075,Levy,1234,789,5678,35789,60.8,70.2,6.0
+12077,Liberty,234,123,789,33567,54.7,64.2,7.4
+12079,Madison,567,345,2345,34890,56.9,66.5,7.0
+12081,Manatee,15678,8901,67890,51234,75.2,84.1,4.0
+12083,Marion,12345,7890,56789,42345,68.5,77.8,5.3
+12085,Martin,5678,3456,23456,56789,80.1,87.5,3.4
+12086,Miami-Dade,123456,67890,456789,48901,76.8,84.9,4.8
+12087,Monroe,3456,1234,12345,58901,78.2,85.7,3.3
+12089,Nassau,2345,1234,12345,54567,73.8,82.5,3.8
+12091,Okaloosa,7890,3456,34567,53456,77.2,85.1,3.5
+12093,Okeechobee,1234,789,5678,37234,61.5,71.2,5.8
+12095,Orange,67890,34567,234567,50234,76.3,84.5,4.3
+12097,Osceola,23456,12345,89012,45678,70.8,79.5,4.9
+12099,Palm Beach,45678,23456,156789,57890,79.8,87.2,3.7
+12101,Pasco,15678,8901,67890,44567,70.2,79.3,5.0
+12103,Pinellas,34567,18901,123456,48123,74.8,83.5,4.1
+12105,Polk,23456,13456,89012,43456,68.9,77.5,5.4
+12107,Putnam,2345,1456,8901,36123,59.5,69.1,6.3
+12109,St. Johns,5678,2345,34567,65789,84.2,90.5,2.9
+12111,St. Lucie,12345,7890,56789,45678,71.3,80.8,4.7
+12113,Santa Rosa,5678,2345,34567,56234,76.9,84.8,3.6
+12115,Sarasota,12345,6789,67890,52789,77.5,85.9,3.9
+12117,Seminole,15678,7890,78901,55456,78.8,86.2,3.8
+12119,Sumter,3456,1234,23456,48901,73.2,82.3,4.2
+12121,Suwannee,1234,789,5678,37456,61.8,71.5,5.6
+12123,Taylor,567,345,2345,35890,58.5,68.1,6.6
+12125,Union,234,145,890,34234,55.3,64.8,7.7
+12127,Volusia,18901,11234,78901,43678,70.5,79.8,5.1
+12129,Wakulla,789,456,3456,46123,69.2,78.5,4.8
+12131,Walton,2345,1234,12345,47234,72.1,81.3,4.5
+12133,Washington,567,345,2345,35567,57.2,66.9,6.8`;
+            
+            parseCSV(exampleCSV);
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadFloridaCounties();
+            createLegend();
+        });
+    </script>
+</body>
+</html>
