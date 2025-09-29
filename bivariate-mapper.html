@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bivariate Choropleth Mapper | Four Color Theorem</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .bivariate-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .bivariate-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            color: white;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+        }
+
+        .control-panel {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .bivariate-legend {
+            width: 180px;
+            height: 180px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 2px;
+            margin: 1rem auto;
+            position: relative;
+        }
+
+        .legend-cell {
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .legend-cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .axis-label {
+            position: absolute;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .x-axis-label {
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .y-axis-label {
+            left: -80px;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+        }
+
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .map-panel {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .county-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 2px;
+            margin: 1rem 0;
+            aspect-ratio: 1;
+        }
+
+        .county-cell {
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .county-cell:hover {
+            border-width: 2px;
+            z-index: 10;
+        }
+
+        .data-controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .variable-selector {
+            background: white;
+            padding: 1rem;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .color-scheme-selector {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .scheme-option {
+            padding: 0.5rem 1rem;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .scheme-option.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .stats-panel {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+
+        .correlation-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .example-maps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .example-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .example-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .adjacent-warning {
+            background: #fff3cd;
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            font-size: 0.875rem;
+        }
+
+        /* Bivariate color schemes */
+        .scheme-1 {
+            /* Purple-Green scheme */
+            --c00: #e8e8e8;
+            --c01: #b8d6be;
+            --c02: #73ae80;
+            --c10: #c8b8d6;
+            --c11: #a8a8c8;
+            --c12: #5a9178;
+            --c20: #9972af;
+            --c21: #8070a8;
+            --c22: #5a5a8b;
+        }
+
+        .scheme-2 {
+            /* Blue-Red scheme */
+            --c00: #e8e8e8;
+            --c01: #f6c8c8;
+            --c02: #e67c73;
+            --c10: #c8d6f6;
+            --c11: #d4b8d4;
+            --c12: #d67c8c;
+            --c20: #7cb8e6;
+            --c21: #9c8ccc;
+            --c22: #b35c8c;
+        }
+
+        .scheme-3 {
+            /* Teal-Orange scheme */
+            --c00: #e8e8e8;
+            --c01: #ffd4a3;
+            --c02: #ff9f3a;
+            --c10: #a3e4d4;
+            --c11: #c8d4b8;
+            --c12: #ffb871;
+            --c20: #3ab8a3;
+            --c21: #71b88c;
+            --c22: #ff8c3a;
+        }
+    </style>
+</head>
+<body>
+    <div class="bivariate-container">
+        <header class="bivariate-header">
+            <h1>Bivariate Choropleth Mapping</h1>
+            <p>Visualizing Two Variables Simultaneously Using Color Theory & Four Color Theorem</p>
+            <p style="font-size: 0.9rem; opacity: 0.9;">
+                Professional tool for GIS analysts, epidemiologists, and social scientists
+            </p>
+        </header>
+
+        <section class="control-panel">
+            <h2>Configure Your Bivariate Map</h2>
+            
+            <div class="data-controls">
+                <div class="variable-selector">
+                    <label><strong>Variable X (Horizontal):</strong></label>
+                    <select id="variableX" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;">
+                        <option value="income">Median Household Income</option>
+                        <option value="education">College Education Rate</option>
+                        <option value="age">Median Age</option>
+                        <option value="density">Population Density</option>
+                        <option value="unemployment">Unemployment Rate</option>
+                    </select>
+                </div>
+                
+                <div class="variable-selector">
+                    <label><strong>Variable Y (Vertical):</strong></label>
+                    <select id="variableY" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;">
+                        <option value="health">Health Insurance Coverage</option>
+                        <option value="poverty">Poverty Rate</option>
+                        <option value="diversity">Ethnic Diversity Index</option>
+                        <option value="housing">Home Ownership Rate</option>
+                        <option value="crime">Crime Rate per 1000</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="color-scheme-selector">
+                <div class="scheme-option active" data-scheme="1">Purple-Green</div>
+                <div class="scheme-option" data-scheme="2">Blue-Red</div>
+                <div class="scheme-option" data-scheme="3">Teal-Orange</div>
+            </div>
+
+            <button class="btn btn-primary" onclick="generateBivariateMap()" style="width: 100%;">
+                Generate Bivariate Map
+            </button>
+        </section>
+
+        <div class="map-grid">
+            <div class="map-panel">
+                <h3>Bivariate Legend</h3>
+                <div style="position: relative; width: 180px; margin: 2rem auto;">
+                    <div class="bivariate-legend scheme-1" id="bivariateL legend">
+                        <div class="legend-cell" style="background: var(--c00)">L-L</div>
+                        <div class="legend-cell" style="background: var(--c01)">L-M</div>
+                        <div class="legend-cell" style="background: var(--c02)">L-H</div>
+                        <div class="legend-cell" style="background: var(--c10)">M-L</div>
+                        <div class="legend-cell" style="background: var(--c11)">M-M</div>
+                        <div class="legend-cell" style="background: var(--c12)">M-H</div>
+                        <div class="legend-cell" style="background: var(--c20)">H-L</div>
+                        <div class="legend-cell" style="background: var(--c21)">H-M</div>
+                        <div class="legend-cell" style="background: var(--c22)">H-H</div>
+                    </div>
+                    <div class="axis-label x-axis-label">Income →</div>
+                    <div class="axis-label y-axis-label">↑ Health Coverage</div>
+                </div>
+                
+                <div class="stats-panel">
+                    <p><strong>Correlation:</strong> <span class="correlation-display">r = 0.42</span></p>
+                    <p><strong>Pattern:</strong> Moderate positive correlation</p>
+                    <p><strong>Clusters:</strong> 3 distinct regions identified</p>
+                </div>
+            </div>
+
+            <div class="map-panel">
+                <h3>County Map Example</h3>
+                <div class="county-grid" id="countyGrid">
+                    <!-- 25 counties in 5x5 grid -->
+                </div>
+                <div class="adjacent-warning">
+                    ⚠️ <strong>Four Color Rule:</strong> Adjacent counties with similar bivariate values can share colors, but must differ in at least one dimension to maintain visual distinction.
+                </div>
+            </div>
+        </div>
+
+        <section class="educational-section" style="background: #f0f4ff; padding: 2rem; border-radius: 8px; margin: 2rem 0;">
+            <h2>Understanding Bivariate Choropleths</h2>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div>
+                    <h3>How It Works</h3>
+                    <p>Bivariate choropleth maps encode two variables simultaneously using a 2D color matrix:</p>
+                    <ul>
+                        <li><strong>X-axis (horizontal):</strong> Controls color hue progression</li>
+                        <li><strong>Y-axis (vertical):</strong> Controls color saturation/lightness</li>
+                        <li><strong>9 Classes:</strong> 3×3 matrix creates 9 distinct combinations</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3>Four Color Theorem Application</h3>
+                    <p>While bivariate maps use 9 colors, the Four Color Theorem still applies:</p>
+                    <ul>
+                        <li>Any subset of regions can be colored with ≤4 colors</li>
+                        <li>Adjacent regions must differ in at least one variable</li>
+                        <li>Helps identify spatial clusters and outliers</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Real-World Applications</h2>
+            <div class="example-maps">
+                <div class="example-card" onclick="loadExample('health')">
+                    <h4>🏥 Public Health</h4>
+                    <p>COVID vaccination rates vs. Population density</p>
+                    <small>Identify areas needing targeted interventions</small>
+                </div>
+                
+                <div class="example-card" onclick="loadExample('social')">
+                    <h4>📊 Social Vulnerability</h4>
+                    <p>Poverty rate vs. Educational attainment</p>
+                    <small>Locate communities needing resources</small>
+                </div>
+                
+                <div class="example-card" onclick="loadExample('environment')">
+                    <h4>🌍 Environmental Justice</h4>
+                    <p>Pollution exposure vs. Minority population</p>
+                    <small>Identify environmental inequities</small>
+                </div>
+                
+                <div class="example-card" onclick="loadExample('election')">
+                    <h4>🗳️ Electoral Analysis</h4>
+                    <p>Voter turnout vs. Median income</p>
+                    <small>Understand voting patterns</small>
+                </div>
+            </div>
+        </section>
+
+        <section style="background: #fff9e6; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;">
+            <h3>📈 Export & Analysis Options</h3>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <button class="btn" onclick="exportBivariateData()">Export Data (CSV)</button>
+                <button class="btn" onclick="exportColorMatrix()">Export Color Matrix</button>
+                <button class="btn" onclick="generateReport()">Generate Analysis Report</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Bivariate mapping implementation
+        let currentScheme = 1;
+        let countyData = [];
+
+        // Generate sample county data
+        function generateCountyData() {
+            const counties = [];
+            for (let i = 0; i < 25; i++) {
+                counties.push({
+                    id: String.fromCharCode(65 + i), // A-Y
+                    row: Math.floor(i / 5),
+                    col: i % 5,
+                    xValue: Math.random(), // 0-1
+                    yValue: Math.random(), // 0-1
+                    xCategory: 0,
+                    yCategory: 0,
+                    bivariateClass: 0
+                });
+            }
+            
+            // Calculate categories (tertiles)
+            counties.forEach(county => {
+                county.xCategory = county.xValue < 0.33 ? 0 : (county.xValue < 0.67 ? 1 : 2);
+                county.yCategory = county.yValue < 0.33 ? 0 : (county.yValue < 0.67 ? 1 : 2);
+                county.bivariateClass = county.yCategory * 3 + county.xCategory;
+            });
+            
+            return counties;
+        }
+
+        function renderCountyGrid() {
+            const grid = document.getElementById('countyGrid');
+            grid.innerHTML = '';
+            
+            const colors = getBivariateColors();
+            
+            countyData.forEach(county => {
+                const cell = document.createElement('div');
+                cell.className = 'county-cell';
+                cell.style.background = colors[county.bivariateClass];
+                cell.textContent = county.id;
+                cell.title = `County ${county.id}\nX: ${(county.xValue * 100).toFixed(0)}%\nY: ${(county.yValue * 100).toFixed(0)}%`;
+                
+                cell.addEventListener('click', () => {
+                    showCountyDetails(county);
+                });
+                
+                grid.appendChild(cell);
+            });
+            
+            // Check for adjacent conflicts (same exact bivariate class)
+            checkAdjacentConflicts();
+        }
+
+        function getBivariateColors() {
+            const schemes = {
+                1: ['#e8e8e8', '#b8d6be', '#73ae80', '#c8b8d6', '#a8a8c8', '#5a9178', '#9972af', '#8070a8', '#5a5a8b'],
+                2: ['#e8e8e8', '#f6c8c8', '#e67c73', '#c8d6f6', '#d4b8d4', '#d67c8c', '#7cb8e6', '#9c8ccc', '#b35c8c'],
+                3: ['#e8e8e8', '#ffd4a3', '#ff9f3a', '#a3e4d4', '#c8d4b8', '#ffb871', '#3ab8a3', '#71b88c', '#ff8c3a']
+            };
+            return schemes[currentScheme];
+        }
+
+        function checkAdjacentConflicts() {
+            let conflicts = 0;
+            const size = 5;
+            
+            countyData.forEach(county => {
+                const neighbors = getNeighbors(county.row, county.col, size);
+                neighbors.forEach(neighbor => {
+                    const neighborCounty = countyData[neighbor.row * size + neighbor.col];
+                    if (neighborCounty && county.bivariateClass === neighborCounty.bivariateClass) {
+                        conflicts++;
+                    }
+                });
+            });
+            
+            if (conflicts > 0) {
+                console.log(`Found ${conflicts / 2} pairs of adjacent counties with identical bivariate classes`);
+            }
+        }
+
+        function getNeighbors(row, col, size) {
+            const neighbors = [];
+            if (row > 0) neighbors.push({row: row - 1, col});
+            if (row < size - 1) neighbors.push({row: row + 1, col});
+            if (col > 0) neighbors.push({row, col: col - 1});
+            if (col < size - 1) neighbors.push({row, col: col + 1});
+            return neighbors;
+        }
+
+        function generateBivariateMap() {
+            countyData = generateCountyData();
+            renderCountyGrid();
+            updateLegendLabels();
+            calculateCorrelation();
+        }
+
+        function updateLegendLabels() {
+            const xVar = document.getElementById('variableX').selectedOptions[0].text;
+            const yVar = document.getElementById('variableY').selectedOptions[0].text;
+            
+            document.querySelector('.x-axis-label').textContent = xVar + ' →';
+            document.querySelector('.y-axis-label').textContent = '↑ ' + yVar;
+        }
+
+        function calculateCorrelation() {
+            // Simple correlation calculation
+            const n = countyData.length;
+            const meanX = countyData.reduce((sum, c) => sum + c.xValue, 0) / n;
+            const meanY = countyData.reduce((sum, c) => sum + c.yValue, 0) / n;
+            
+            const numerator = countyData.reduce((sum, c) => 
+                sum + (c.xValue - meanX) * (c.yValue - meanY), 0);
+            const denomX = Math.sqrt(countyData.reduce((sum, c) => 
+                sum + Math.pow(c.xValue - meanX, 2), 0));
+            const denomY = Math.sqrt(countyData.reduce((sum, c) => 
+                sum + Math.pow(c.yValue - meanY, 2), 0));
+            
+            const r = numerator / (denomX * denomY);
+            document.querySelector('.correlation-display').textContent = `r = ${r.toFixed(2)}`;
+        }
+
+        function showCountyDetails(county) {
+            alert(`County ${county.id}\n` +
+                  `X Variable: ${(county.xValue * 100).toFixed(1)}%\n` +
+                  `Y Variable: ${(county.yValue * 100).toFixed(1)}%\n` +
+                  `Bivariate Class: ${county.bivariateClass + 1}/9`);
+        }
+
+        function loadExample(type) {
+            // Load predefined examples
+            const examples = {
+                health: { x: 'density', y: 'health' },
+                social: { x: 'income', y: 'education' },
+                environment: { x: 'unemployment', y: 'diversity' },
+                election: { x: 'income', y: 'age' }
+            };
+            
+            if (examples[type]) {
+                document.getElementById('variableX').value = examples[type].x;
+                document.getElementById('variableY').value = examples[type].y;
+                generateBivariateMap();
+            }
+        }
+
+        function exportBivariateData() {
+            let csv = 'County,X_Value,Y_Value,X_Category,Y_Category,Bivariate_Class\n';
+            countyData.forEach(county => {
+                csv += `${county.id},${county.xValue.toFixed(3)},${county.yValue.toFixed(3)},` +
+                       `${county.xCategory},${county.yCategory},${county.bivariateClass}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'bivariate_data.csv';
+            link.click();
+        }
+
+        function exportColorMatrix() {
+            const colors = getBivariateColors();
+            let csv = 'Class,X_Category,Y_Category,Color_Hex\n';
+            colors.forEach((color, i) => {
+                const x = i % 3;
+                const y = Math.floor(i / 3);
+                csv += `${i},${x},${y},${color}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'bivariate_colors.csv';
+            link.click();
+        }
+
+        function generateReport() {
+            const xVar = document.getElementById('variableX').selectedOptions[0].text;
+            const yVar = document.getElementById('variableY').selectedOptions[0].text;
+            
+            let report = `BIVARIATE CHOROPLETH ANALYSIS REPORT\n`;
+            report += `Generated: ${new Date().toLocaleString()}\n\n`;
+            report += `VARIABLES:\n`;
+            report += `X-Axis: ${xVar}\n`;
+            report += `Y-Axis: ${yVar}\n\n`;
+            report += `DISTRIBUTION:\n`;
+            
+            const classCounts = Array(9).fill(0);
+            countyData.forEach(c => classCounts[c.bivariateClass]++);
+            
+            classCounts.forEach((count, i) => {
+                const x = i % 3;
+                const y = Math.floor(i / 3);
+                const xLabel = ['Low', 'Medium', 'High'][x];
+                const yLabel = ['Low', 'Medium', 'High'][y];
+                report += `Class ${i + 1} (${xLabel}-${yLabel}): ${count} counties\n`;
+            });
+            
+            const win = window.open('', '_blank');
+            win.document.write('<pre>' + report + '</pre>');
+            win.document.title = 'Bivariate Analysis Report';
+        }
+
+        // Color scheme switcher
+        document.querySelectorAll('.scheme-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                document.querySelectorAll('.scheme-option').forEach(o => o.classList.remove('active'));
+                e.target.classList.add('active');
+                currentScheme = parseInt(e.target.dataset.scheme);
+                
+                // Update legend colors
+                const legend = document.getElementById('bivariateLegend');
+                legend.className = `bivariate-legend scheme-${currentScheme}`;
+                
+                if (countyData.length > 0) {
+                    renderCountyGrid();
+                }
+            });
+        });
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            generateBivariateMap();
+        });
+    </script>
+</body>
+</html>

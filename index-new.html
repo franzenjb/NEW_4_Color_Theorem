@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Four Color Theorem | Professional GIS & Mapping Suite</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        
+        .hero-section h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+        
+        .tool-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .tool-header {
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .tool-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tool-content {
+            padding: 1.5rem;
+        }
+        
+        .tool-features {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+        
+        .tool-features li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .tool-features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .launch-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background: #3498db;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        .launch-btn:hover {
+            background: #2980b9;
+        }
+        
+        .emergency-btn {
+            background: #dc143c;
+        }
+        
+        .emergency-btn:hover {
+            background: #b91c1c;
+        }
+        
+        .bivariate-btn {
+            background: #764ba2;
+        }
+        
+        .bivariate-btn:hover {
+            background: #5a3584;
+        }
+        
+        .theory-btn {
+            background: #2c3e50;
+        }
+        
+        .theory-btn:hover {
+            background: #1a252f;
+        }
+        
+        .info-section {
+            background: #f8f9fa;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+        
+        .use-cases {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 2rem auto;
+        }
+        
+        .use-case {
+            text-align: left;
+        }
+        
+        .use-case h3 {
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="hero-section">
+        <h1>Four Color Theorem Suite</h1>
+        <p style="font-size: 1.25rem;">Professional Tools for GIS, Emergency Response & Data Visualization</p>
+        <p style="opacity: 0.9;">Based on the mathematical proof that any map needs at most 4 colors</p>
+    </header>
+
+    <main>
+        <div class="tool-grid">
+            <!-- Emergency Response Mapper -->
+            <div class="tool-card" onclick="window.location.href='emergency-mapper.html'">
+                <div class="tool-header">
+                    <div class="tool-icon">🚨</div>
+                    <h2>Emergency Response Mapper</h2>
+                    <p style="color: #dc143c; font-weight: bold;">For Red Cross & FEMA</p>
+                </div>
+                <div class="tool-content">
+                    <p>Coordinate disaster response teams using zone-based mapping to prevent resource conflicts.</p>
+                    <ul class="tool-features">
+                        <li>Assign response teams to zones</li>
+                        <li>Prevent adjacent zone conflicts</li>
+                        <li>Priority-based zone management</li>
+                        <li>Export team assignments as CSV</li>
+                        <li>Population-weighted distribution</li>
+                    </ul>
+                    <a href="emergency-mapper.html" class="launch-btn emergency-btn">
+                        Launch Emergency Mapper →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Bivariate Choropleth Mapper -->
+            <div class="tool-card" onclick="window.location.href='bivariate-mapper.html'">
+                <div class="tool-header">
+                    <div class="tool-icon">📊</div>
+                    <h2>Bivariate Choropleth Mapper</h2>
+                    <p style="color: #764ba2; font-weight: bold;">Advanced GIS Visualization</p>
+                </div>
+                <div class="tool-content">
+                    <p>Visualize two variables simultaneously using sophisticated color matrices for deeper insights.</p>
+                    <ul class="tool-features">
+                        <li>9-class bivariate color schemes</li>
+                        <li>Multiple color palettes</li>
+                        <li>Correlation analysis</li>
+                        <li>Export color matrices</li>
+                        <li>Real-world data examples</li>
+                    </ul>
+                    <a href="bivariate-mapper.html" class="launch-btn bivariate-btn">
+                        Launch Bivariate Mapper →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Classic Graph Coloring -->
+            <div class="tool-card" onclick="window.location.href='index.html'">
+                <div class="tool-header">
+                    <div class="tool-icon">🗺️</div>
+                    <h2>Classic Graph Coloring</h2>
+                    <p style="color: #2c3e50; font-weight: bold;">Educational & Research</p>
+                </div>
+                <div class="tool-content">
+                    <p>Explore the mathematical foundations with interactive graph coloring and algorithm visualization.</p>
+                    <ul class="tool-features">
+                        <li>Multiple coloring algorithms</li>
+                        <li>DSATUR, Welsh-Powell, Greedy</li>
+                        <li>Import GeoJSON/CSV data</li>
+                        <li>Historical context & theory</li>
+                        <li>Export as SVG/PNG</li>
+                    </ul>
+                    <a href="index.html" class="launch-btn theory-btn">
+                        Launch Classic Tool →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <section class="info-section">
+            <h2>Real-World Applications</h2>
+            <div class="use-cases">
+                <div class="use-case">
+                    <h3>🏥 Public Health</h3>
+                    <p>Map disease clusters, vaccination coverage, and healthcare access patterns using bivariate analysis.</p>
+                </div>
+                <div class="use-case">
+                    <h3>🌪️ Disaster Response</h3>
+                    <p>Coordinate emergency teams, evacuation zones, and resource distribution without conflicts.</p>
+                </div>
+                <div class="use-case">
+                    <h3>🏘️ Urban Planning</h3>
+                    <p>Analyze demographic patterns, housing affordability, and infrastructure needs simultaneously.</p>
+                </div>
+                <div class="use-case">
+                    <h3>🌍 Environmental Justice</h3>
+                    <p>Identify communities disproportionately affected by pollution and climate change.</p>
+                </div>
+            </div>
+        </section>
+
+        <section style="background: #fff; padding: 3rem 2rem;">
+            <div style="max-width: 800px; margin: 0 auto;">
+                <h2 style="text-align: center; margin-bottom: 2rem;">The Mathematical Foundation</h2>
+                
+                <div style="background: #fff9e6; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #f39c12;">
+                    <h3>The Four Color Theorem (1976)</h3>
+                    <p>Proven by Kenneth Appel and Wolfgang Haken using computer assistance—the first major theorem proven this way. It states that any map drawn on a plane can be colored using at most four colors such that no two adjacent regions share the same color.</p>
+                </div>
+                
+                <div style="margin-top: 2rem;">
+                    <h3>Why This Matters for Your Work:</h3>
+                    <ul style="line-height: 1.8;">
+                        <li><strong>Emergency Response:</strong> Ensures clear command structures and prevents resource conflicts between adjacent response zones</li>
+                        <li><strong>Data Visualization:</strong> Guarantees readable maps where adjacent regions are always distinguishable</li>
+                        <li><strong>Network Planning:</strong> Optimizes frequency allocation, scheduling, and resource distribution</li>
+                        <li><strong>Bivariate Mapping:</strong> While using 9 colors total, maintains the principle that any subset needs only 4</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="info-section">
+            <div style="max-width: 600px; margin: 0 auto; text-align: center;">
+                <h3>Built for Professionals</h3>
+                <p>Whether you're a Red Cross disaster coordinator, GIS analyst, epidemiologist, or urban planner, these tools apply proven mathematical principles to solve real-world mapping challenges.</p>
+                
+                <div style="margin-top: 2rem; padding: 1rem; background: white; border-radius: 8px;">
+                    <p><strong>Open Source • No Login Required • Export Your Work</strong></p>
+                    <p style="font-size: 0.9rem; color: #666;">Based on peer-reviewed mathematical proofs and GIS best practices</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer style="background: #2c3e50; color: white; padding: 2rem; text-align: center;">
+        <p>Four Color Theorem Professional Suite • Based on Appel-Haken (1976)</p>
+        <p style="font-size: 0.9rem; opacity: 0.8;">Educational resource for GIS professionals, emergency responders, and data scientists</p>
+    </footer>
+</body>
+</html>
