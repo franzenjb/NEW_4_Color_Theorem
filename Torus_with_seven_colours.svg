@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+	width="991px"
+	height="450px"
+	xmlns="http://www.w3.org/2000/svg"
+	version="1.0"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	zoomAndPan="magnify"
+	contentStyleType="text/css"
+	preserveAspectRatio="xMidYMid meet"
+>
+
+	<style type="text/css">
+		<![CDATA[
+		rect, .internal {
+			stroke:		#000000;
+			stroke-width:	5;
+		}
+
+		polygon {
+			stroke:		#000000;
+		}
+
+		.arrow {
+			fill:		#000000;
+		}
+		]]>
+	</style>
+
+	<rect fill="#ffff00" x="23" y="23" width="944" height="403" />
+
+	<g fill="#99ff99">
+		<polygon class="internal" points="90,23 495,23 495,157 90,99.5" />
+		<polygon class="internal" points="90,369.75 495,425.5 90,425.5" />
+	</g>
+	<g fill="#66ffff">
+		<polygon class="internal" points="495,22.25 900,80.25 900,215.25 495,157.25" />
+	</g>
+	<g fill="#ff99ff">
+		<polygon class="internal" points="23,90 360,138 360,273 23,225" />
+		<polygon class="internal" points="899.75,80.25 967,90 967,225 899.75,215.25" />
+	</g>
+	<g fill="#9999ff">
+		<polygon class="internal" points="360,138 765,196 765,331 360,273" />
+	</g>
+	<g fill="#cccccc">
+		<polygon class="internal" points="765,196 967,225 967,360 765,331" />
+		<polygon class="internal" points="23,225 225,254 225,389 23,360" />
+	</g>
+	<g fill="#ff9966">
+		<polygon class="internal" points="630,23 630,41.5 495,23" />
+		<polygon class="internal" points="225,254 630,312 630,425.5 486,425.5 225,389" />
+	</g>
+
+	<g font-family="sans-serif" font-size="48" font-weight="bold" text-anchor="middle">
+		<text x="900" y="70">1</text>
+		<text x="55" y="75">1</text>
+		<text x="290" y="90">2</text>
+		<text x="700" y="140">3</text>
+		<text x="935" y="170">4</text>
+		<text x="180" y="200">4</text>
+		<text x="560" y="250">5</text>
+		<text x="870" y="300">6</text>
+		<text x="120" y="320">6</text>
+		<text x="430" y="370">7</text>
+		<text x="800" y="400">1</text>
+		<text x="55" y="415">1</text>
+		<text x="160" y="420">2</text>
+	</g>
+
+	<polygon class="arrow" points="23,203 1,248 45,248" />
+	<polygon class="arrow" points="23,203 1,248 45,248" transform="matrix(0 -1 1 0 235 46 )" />
+	<polygon class="arrow" points="23,203 1,248 45,248" transform="matrix(0 -1 1 0 280 46 )" />
+	<polygon class="arrow" points="23,203 1,248 45,248" transform="matrix(0 -1 1 0 235 448)" />
+	<polygon class="arrow" points="23,203 1,248 45,248" transform="matrix(0 -1 1 0 280 448)" />
+	<polygon class="arrow" points="23,203 1,248 45,248" transform="matrix(1  0 0 1 944 0  )" />
+
+</svg>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%" viewBox="-85 -75 170 170">
+ <title>Tietze Moebius</title>
+ <desc>A colouring of a Mobius strip with six colours with each colour touching every other by CMG Lee.</desc>
+ <defs>
+  <filter id="filter_shade">
+   <feOffset in="SourceAlpha" dy="11"/>
+   <feGaussianBlur stdDeviation="2"/>
+   <feComposite in="SourceGraphic" operator="arithmetic" k2="0.8" k3="0.2"/>
+  </filter>
+  <linearGradient id="grad_band" x1="0%" y1="0%" x2="0%" y2="100%">
+   <stop offset="2%" stop-color="#cc6600"/>
+   <stop offset="15%" stop-color="#ffcc00"/>
+  </linearGradient>
+  <radialGradient id="grad_sphere" cx="50%" cy="50%" r="50%" fx="50%" fy="90%">
+   <stop offset="0%" stop-color="#000000" stop-opacity="0"/>
+   <stop offset="99%" stop-color="#000000" stop-opacity="0.3"/>
+  </radialGradient>
+  <linearGradient id="grad_highlight" x1="0%" y1="0%" x2="0%" y2="100%">
+   <stop offset="10%" stop-color="#ffffff" stop-opacity="0.9"/>
+   <stop offset="99%" stop-color="#ffffff" stop-opacity="0"/>
+  </linearGradient>
+  <g id="orb" stroke="none" transform="scale(0.03)">
+   <circle cx="0" cy="0" r="100" stroke="#000000" stroke-width="9"/>
+   <circle cx="0" cy="0" r="100" fill="url(#grad_sphere)"/>
+   <ellipse cx="0" cy="-45" rx="70" ry="50" fill="url(#grad_highlight)"/>
+  </g>
+  <path id="outer" d="M 10,-70 a 50,70 0 0 1 50,70 h 20 a 60,80 0 0 0 -60,-70 q -40,0 -40,60 v 10 a 20,20 0 0 0 20,20 v 20 a 40,40 0 0 1 -40,-40 q 0,-70 50,-70 h 9"/>
+  <path id="inner" d="M 10,-70 a 50,70 0 0 1 50,70 A 60,60 0 0 1 42.4,42.4 L 28.3,28.3 A 40,40 0 0 0 40,0 q 0,-70 -50,-70 z"/>
+ </defs>
+ <circle cx="0" cy="0" r="99999" fill="#ffffff"/>
+ <g stroke="#000000" filter="url(#filter_shade)">
+  <use fill="url(#grad_band)" xlink:href="#inner" transform="scale(-1,1)"/>
+  <use fill="#00ccff" xlink:href="#inner"/>
+  <use fill="#0000ff" xlink:href="#outer"/>
+  <use fill="#cc0000" xlink:href="#outer" transform="scale(-1,1)"/>
+  <path fill="#ffcc00" d="M -10,-70 Q 8,-70 21,-60 h 15 Q 24,-70 10,-70 z"/>
+  <path fill="#cc66ff" d="M 28.3,28.3 A 40,40 0 0 1 -28.3,28.3 L -42.4,42.4 A 60,60 0 0 0 42.4,42.4 z"/>
+  <path fill="#009966" d="M 80,0 a 80,80 0 0 1 -160,0 h 20 a 60,60 0 0 0 120,0 z"/>
+ </g>
+ <g fill="#cccccc">
+  <use xlink:href="#orb" transform="translate(0,20)"/>
+  <use xlink:href="#orb" transform="translate(0,40)"/>
+  <use xlink:href="#orb" transform="translate( 60,0)"/>
+  <use xlink:href="#orb" transform="translate(-60,0)"/>
+  <use xlink:href="#orb" transform="translate(-80,0)"/>
+  <use xlink:href="#orb" transform="translate( 80,0)"/>
+  <use xlink:href="#orb" transform="translate( 28.3,28.3)"/>
+  <use xlink:href="#orb" transform="translate(-28.3,28.3)"/>
+  <use xlink:href="#orb" transform="translate(-42.4,42.4)"/>
+  <use xlink:href="#orb" transform="translate( 42.4,42.4)"/>
+  <use xlink:href="#orb" transform="translate(21,-60)"/>
+  <use xlink:href="#orb" transform="translate(36,-60)"/>
+ </g>
+</svg>

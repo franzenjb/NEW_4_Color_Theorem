@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Four-Color Studio</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">Four‑Color Studio</div>
+      <div class="subtitle">Elegant tools for graphs and maps</div>
+    </header>
+
+    <section class="toolbar" role="region" aria-label="Controls">
+      <div class="tool-group">
+        <label for="modeSelect">Mode</label>
+        <select id="modeSelect">
+          <option value="graph">Graph</option>
+          <option value="regions">Regions</option>
+        </select>
+      </div>
+
+      <div class="tool-group">
+        <label for="paletteSelect">Palette</label>
+        <select id="paletteSelect"></select>
+        <div id="swatches" class="swatches" aria-label="Color swatches"></div>
+      </div>
+
+      <div class="tool-group">
+        <button id="eyedropperBtn" title="Eyedropper">Eyedropper</button>
+      </div>
+
+      <div class="tool-group">
+        <button id="autoColorBtn" title="Auto-color">Auto‑color</button>
+      </div>
+
+      <div class="tool-group">
+        <button id="undoBtn" title="Undo">Undo</button>
+        <button id="redoBtn" title="Redo">Redo</button>
+        <button id="resetBtn" class="danger" title="Reset">Reset</button>
+      </div>
+
+      <div class="tool-group">
+        <button id="exportSVGBtn" title="Export SVG">Export SVG</button>
+        <button id="exportPNGBtn" title="Export PNG">Export PNG</button>
+      </div>
+    </section>
+
+    <main class="workbench">
+      <div id="graphCanvasContainer" class="canvas" aria-label="Graph canvas"></div>
+      <div id="regionCanvasContainer" class="canvas" aria-label="Regions canvas" hidden></div>
+    </main>
+
+    <footer class="statusbar" role="status" aria-live="polite">
+      <span id="statusText">Ready.</span>
+    </footer>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+  </html>
+
+
