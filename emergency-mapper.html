@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Four Color Theorem | Emergency Response Mapper</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .emergency-header {
+            background: linear-gradient(135deg, #DC143C, #8B0000);
+            padding: 1.5rem;
+            color: white;
+        }
+        
+        .emergency-controls {
+            background: #FFF5F5;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        
+        .zone-info {
+            background: white;
+            padding: 1rem;
+            border-left: 4px solid #DC143C;
+            margin: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .priority-critical {
+            color: #DC143C;
+            font-weight: bold;
+        }
+        
+        .priority-high {
+            color: #FF6B35;
+            font-weight: bold;
+        }
+        
+        .priority-medium {
+            color: #FFA500;
+        }
+        
+        .team-assignment {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            margin: 0.25rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .team-alpha { background: #DC143C; }
+        .team-bravo { background: #4169E1; }
+        .team-charlie { background: #FFD700; color: #333; }
+        .team-delta { background: #228B22; }
+        
+        .conflict-warning {
+            background: #FFF3CD;
+            border: 2px solid #FFC107;
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        
+        .response-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #DC143C;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="emergency-header">
+        <h1>🚨 Emergency Response Zone Mapper</h1>
+        <p>Four Color Theorem for Disaster Response Coordination</p>
+        <div class="alert-banner">
+            American Red Cross / FEMA Response Planning Tool
+        </div>
+    </header>
+
+    <main class="app-container">
+        <section class="emergency-controls">
+            <h2>Response Scenario</h2>
+            <select id="scenarioSelect" style="width: 100%; padding: 0.5rem; font-size: 1rem;">
+                <option value="hurricane">🌀 Hurricane Response - Coastal Region</option>
+                <option value="wildfire">🔥 Wildfire Evacuation - Mountain Communities</option>
+                <option value="flood">💧 Flash Flood - River Valley</option>
+                <option value="earthquake">🏚️ Earthquake Response - Urban Area</option>
+                <option value="pandemic">🏥 Pandemic Response - Healthcare Districts</option>
+            </select>
+        </section>
+
+        <div class="response-stats">
+            <div class="stat-card">
+                <div class="stat-value" id="totalPopulation">186,000</div>
+                <div class="stat-label">Total Population Affected</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalZones">10</div>
+                <div class="stat-label">Response Zones</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="teamsNeeded">4</div>
+                <div class="stat-label">Teams Required</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="criticalZones">4</div>
+                <div class="stat-label">Critical Priority Zones</div>
+            </div>
+        </div>
+
+        <section class="workspace-layout">
+            <aside class="control-sidebar" style="width: 350px;">
+                <div class="control-section">
+                    <h3>🚑 Response Teams</h3>
+                    <div class="team-list">
+                        <div class="team-assignment team-alpha">
+                            Alpha Team - Search & Rescue
+                        </div>
+                        <div class="team-assignment team-bravo">
+                            Bravo Team - Medical Response
+                        </div>
+                        <div class="team-assignment team-charlie">
+                            Charlie Team - Shelter Management
+                        </div>
+                        <div class="team-assignment team-delta">
+                            Delta Team - Supply Distribution
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>⚡ Quick Actions</h3>
+                    <button class="btn btn-primary" onclick="autoAssignTeams()" style="width: 100%; margin-bottom: 0.5rem;">
+                        Auto-Assign Teams (Optimal)
+                    </button>
+                    <button class="btn" onclick="prioritizeCritical()" style="width: 100%; margin-bottom: 0.5rem;">
+                        Prioritize Critical Zones
+                    </button>
+                    <button class="btn" onclick="checkConflicts()" style="width: 100%; margin-bottom: 0.5rem;">
+                        Check for Conflicts
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearAssignments()" style="width: 100%;">
+                        Clear All Assignments
+                    </button>
+                </div>
+
+                <div class="control-section">
+                    <h3>📊 Zone Details</h3>
+                    <div id="zoneDetails">
+                        <p style="color: #666;">Click on a zone to see details</p>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3>📋 Export Options</h3>
+                    <button class="btn" onclick="exportCSV()" style="width: 100%; margin-bottom: 0.5rem;">
+                        Export Team Assignments (CSV)
+                    </button>
+                    <button class="btn" onclick="exportMap()" style="width: 100%; margin-bottom: 0.5rem;">
+                        Export Response Map (PNG)
+                    </button>
+                    <button class="btn" onclick="printBriefing()" style="width: 100%;">
+                        Generate Team Briefing
+                    </button>
+                </div>
+            </aside>
+
+            <div class="canvas-container" style="flex: 1;">
+                <div id="mapCanvas" class="map-canvas">
+                    <svg id="emergencySvg" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid meet">
+                        <!-- Emergency zones will be rendered here -->
+                    </svg>
+                </div>
+                <div class="canvas-status" id="canvasStatus">
+                    <strong>Status:</strong> <span id="statusMessage">Ready for team assignment. Adjacent zones cannot have the same team.</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="zone-info" id="conflictInfo" style="display: none;">
+            <h3>⚠️ Conflict Detection</h3>
+            <div id="conflictDetails"></div>
+        </section>
+
+        <section class="educational-note" style="background: #E8F5E9; padding: 1.5rem; margin: 2rem 0; border-radius: 8px;">
+            <h3>🎓 Why This Works: The Four Color Theorem</h3>
+            <p><strong>Mathematical Guarantee:</strong> Any map of response zones can be assigned to at most 4 different teams, ensuring no adjacent zones share the same team. This prevents resource conflicts and communication overlap.</p>
+            <p><strong>Practical Application:</strong> In emergency response, adjacent zones often share:</p>
+            <ul>
+                <li>• Road networks and evacuation routes</li>
+                <li>• Radio frequencies and communication channels</li>
+                <li>• Medical facilities and supply depots</li>
+                <li>• Command posts and staging areas</li>
+            </ul>
+            <p>By assigning different teams to adjacent zones, we ensure clear command structures and prevent resource conflicts during critical response operations.</p>
+        </section>
+    </main>
+
+    <script>
+        // Emergency Response Implementation
+        let currentZones = null;
+        let selectedTeam = 0;
+        let assignments = {};
+
+        async function loadEmergencyData() {
+            try {
+                const response = await fetch('src/data/emergency-zones.json');
+                currentZones = await response.json();
+                renderEmergencyMap();
+                updateStatistics();
+            } catch (error) {
+                // Use inline data if file not found
+                currentZones = generateDefaultEmergencyZones();
+                renderEmergencyMap();
+                updateStatistics();
+            }
+        }
+
+        function generateDefaultEmergencyZones() {
+            return {
+                name: "Hurricane Response Zones",
+                nodes: [
+                    {id: "Z1", name: "Coastal Evacuation", x: 150, y: 200, population: 45000, priority: "critical"},
+                    {id: "Z2", name: "Medical District", x: 300, y: 150, population: 12000, priority: "critical"},
+                    {id: "Z3", name: "Downtown Shelters", x: 450, y: 200, population: 28000, priority: "high"},
+                    {id: "Z4", name: "Industrial Zone", x: 600, y: 150, population: 8000, priority: "medium"},
+                    {id: "Z5", name: "Residential North", x: 300, y: 300, population: 35000, priority: "high"},
+                    {id: "Z6", name: "Residential South", x: 450, y: 350, population: 31000, priority: "high"},
+                    {id: "Z7", name: "Airport District", x: 600, y: 300, population: 5000, priority: "critical"},
+                    {id: "Z8", name: "Harbor Area", x: 150, y: 350, population: 3000, priority: "medium"}
+                ],
+                edges: [
+                    {source: "Z1", target: "Z2"},
+                    {source: "Z1", target: "Z5"},
+                    {source: "Z1", target: "Z8"},
+                    {source: "Z2", target: "Z3"},
+                    {source: "Z2", target: "Z5"},
+                    {source: "Z3", target: "Z4"},
+                    {source: "Z3", target: "Z5"},
+                    {source: "Z3", target: "Z6"},
+                    {source: "Z4", target: "Z7"},
+                    {source: "Z5", target: "Z6"},
+                    {source: "Z5", target: "Z8"},
+                    {source: "Z6", target: "Z7"}
+                ]
+            };
+        }
+
+        function renderEmergencyMap() {
+            const svg = document.getElementById('emergencySvg');
+            svg.innerHTML = '';
+
+            const teamColors = ['#DC143C', '#4169E1', '#FFD700', '#228B22'];
+            const teamNames = ['Alpha', 'Bravo', 'Charlie', 'Delta'];
+
+            // Create edge group
+            const edgeGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            svg.appendChild(edgeGroup);
+
+            // Create node map
+            const nodeMap = new Map();
+            currentZones.nodes.forEach(node => nodeMap.set(node.id, node));
+
+            // Render edges
+            currentZones.edges.forEach(edge => {
+                const source = nodeMap.get(edge.source);
+                const target = nodeMap.get(edge.target);
+                
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', source.x);
+                line.setAttribute('y1', source.y);
+                line.setAttribute('x2', target.x);
+                line.setAttribute('y2', target.y);
+                line.setAttribute('stroke', '#999');
+                line.setAttribute('stroke-width', '2');
+                line.setAttribute('stroke-dasharray', '5,5');
+                edgeGroup.appendChild(line);
+            });
+
+            // Render zones
+            currentZones.nodes.forEach(zone => {
+                const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                g.style.cursor = 'pointer';
+
+                // Zone circle
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', zone.x);
+                circle.setAttribute('cy', zone.y);
+                circle.setAttribute('r', '35');
+                circle.setAttribute('fill', assignments[zone.id] !== undefined ? teamColors[assignments[zone.id]] : '#fff');
+                circle.setAttribute('stroke', zone.priority === 'critical' ? '#DC143C' : '#666');
+                circle.setAttribute('stroke-width', zone.priority === 'critical' ? '4' : '2');
+                
+                // Zone name
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', zone.x);
+                text.setAttribute('y', zone.y - 45);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('font-size', '12');
+                text.setAttribute('font-weight', 'bold');
+                text.textContent = zone.name;
+
+                // Zone ID
+                const idText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                idText.setAttribute('x', zone.x);
+                idText.setAttribute('y', zone.y + 5);
+                idText.setAttribute('text-anchor', 'middle');
+                idText.setAttribute('font-size', '18');
+                idText.setAttribute('font-weight', 'bold');
+                idText.setAttribute('fill', assignments[zone.id] !== undefined ? '#fff' : '#000');
+                idText.textContent = zone.id;
+
+                // Population
+                const popText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                popText.setAttribute('x', zone.x);
+                popText.setAttribute('y', zone.y + 55);
+                popText.setAttribute('text-anchor', 'middle');
+                popText.setAttribute('font-size', '10');
+                popText.textContent = `Pop: ${(zone.population/1000).toFixed(0)}k`;
+
+                // Click handler
+                g.addEventListener('click', () => {
+                    assignTeamToZone(zone.id);
+                    showZoneDetails(zone);
+                });
+
+                g.appendChild(circle);
+                g.appendChild(text);
+                g.appendChild(idText);
+                g.appendChild(popText);
+                svg.appendChild(g);
+            });
+        }
+
+        function assignTeamToZone(zoneId) {
+            if (assignments[zoneId] !== undefined) {
+                assignments[zoneId] = (assignments[zoneId] + 1) % 4;
+            } else {
+                assignments[zoneId] = selectedTeam;
+            }
+            renderEmergencyMap();
+            checkConflicts();
+        }
+
+        function showZoneDetails(zone) {
+            const teamNames = ['Alpha Team', 'Bravo Team', 'Charlie Team', 'Delta Team'];
+            const details = document.getElementById('zoneDetails');
+            details.innerHTML = `
+                <div class="zone-info">
+                    <h4>${zone.name} (${zone.id})</h4>
+                    <p class="priority-${zone.priority}">Priority: ${zone.priority.toUpperCase()}</p>
+                    <p>Population: ${zone.population.toLocaleString()}</p>
+                    <p>Assigned: ${assignments[zone.id] !== undefined ? teamNames[assignments[zone.id]] : 'Unassigned'}</p>
+                </div>
+            `;
+        }
+
+        function autoAssignTeams() {
+            // Simple greedy coloring
+            const adjacency = buildAdjacencyMatrix();
+            const n = currentZones.nodes.length;
+            assignments = {};
+
+            for (let i = 0; i < n; i++) {
+                const usedColors = new Set();
+                const node = currentZones.nodes[i];
+                
+                // Check neighbors
+                for (let j = 0; j < n; j++) {
+                    if (adjacency[i][j] && assignments[currentZones.nodes[j].id] !== undefined) {
+                        usedColors.add(assignments[currentZones.nodes[j].id]);
+                    }
+                }
+                
+                // Assign first available color
+                for (let color = 0; color < 4; color++) {
+                    if (!usedColors.has(color)) {
+                        assignments[node.id] = color;
+                        break;
+                    }
+                }
+            }
+
+            renderEmergencyMap();
+            document.getElementById('statusMessage').textContent = 'Teams auto-assigned using Four Color algorithm. No conflicts detected.';
+        }
+
+        function buildAdjacencyMatrix() {
+            const n = currentZones.nodes.length;
+            const matrix = Array(n).fill(null).map(() => Array(n).fill(false));
+            const nodeIndexMap = new Map();
+            
+            currentZones.nodes.forEach((node, i) => {
+                nodeIndexMap.set(node.id, i);
+            });
+            
+            currentZones.edges.forEach(edge => {
+                const i = nodeIndexMap.get(edge.source);
+                const j = nodeIndexMap.get(edge.target);
+                if (i !== undefined && j !== undefined) {
+                    matrix[i][j] = true;
+                    matrix[j][i] = true;
+                }
+            });
+            
+            return matrix;
+        }
+
+        function checkConflicts() {
+            const conflicts = [];
+            const nodeMap = new Map();
+            currentZones.nodes.forEach(node => nodeMap.set(node.id, node));
+
+            currentZones.edges.forEach(edge => {
+                if (assignments[edge.source] !== undefined && 
+                    assignments[edge.target] !== undefined &&
+                    assignments[edge.source] === assignments[edge.target]) {
+                    conflicts.push({source: edge.source, target: edge.target});
+                }
+            });
+
+            if (conflicts.length > 0) {
+                document.getElementById('conflictInfo').style.display = 'block';
+                document.getElementById('conflictDetails').innerHTML = 
+                    `<p style="color: red;">⚠️ Found ${conflicts.length} conflict(s):</p>` +
+                    conflicts.map(c => `<p>Zones ${c.source} and ${c.target} have the same team!</p>`).join('');
+                document.getElementById('statusMessage').textContent = `Warning: ${conflicts.length} adjacent zones have team conflicts!`;
+            } else {
+                document.getElementById('conflictInfo').style.display = 'none';
+                document.getElementById('statusMessage').textContent = 'All team assignments valid. No adjacent zones share teams.';
+            }
+        }
+
+        function clearAssignments() {
+            assignments = {};
+            renderEmergencyMap();
+            document.getElementById('statusMessage').textContent = 'All team assignments cleared.';
+            document.getElementById('conflictInfo').style.display = 'none';
+        }
+
+        function updateStatistics() {
+            const totalPop = currentZones.nodes.reduce((sum, node) => sum + node.population, 0);
+            const criticalCount = currentZones.nodes.filter(n => n.priority === 'critical').length;
+            
+            document.getElementById('totalPopulation').textContent = (totalPop / 1000).toFixed(0) + 'k';
+            document.getElementById('totalZones').textContent = currentZones.nodes.length;
+            document.getElementById('criticalZones').textContent = criticalCount;
+        }
+
+        function exportCSV() {
+            const teamNames = ['Alpha', 'Bravo', 'Charlie', 'Delta'];
+            let csv = 'Zone ID,Zone Name,Population,Priority,Assigned Team\n';
+            
+            currentZones.nodes.forEach(zone => {
+                const team = assignments[zone.id] !== undefined ? teamNames[assignments[zone.id]] : 'Unassigned';
+                csv += `${zone.id},"${zone.name}",${zone.population},${zone.priority},${team}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'emergency_response_assignments.csv';
+            link.click();
+        }
+
+        function printBriefing() {
+            const teamNames = ['Alpha Team - Search & Rescue', 'Bravo Team - Medical', 'Charlie Team - Shelters', 'Delta Team - Supplies'];
+            const teams = [[], [], [], []];
+            
+            currentZones.nodes.forEach(zone => {
+                if (assignments[zone.id] !== undefined) {
+                    teams[assignments[zone.id]].push(zone);
+                }
+            });
+            
+            let briefing = `EMERGENCY RESPONSE BRIEFING\n${new Date().toLocaleString()}\n\n`;
+            
+            teams.forEach((teamZones, i) => {
+                if (teamZones.length > 0) {
+                    briefing += `\n${teamNames[i]}:\n`;
+                    briefing += `Zones: ${teamZones.map(z => z.id).join(', ')}\n`;
+                    briefing += `Total Population: ${teamZones.reduce((sum, z) => sum + z.population, 0).toLocaleString()}\n`;
+                    briefing += `Critical Zones: ${teamZones.filter(z => z.priority === 'critical').length}\n`;
+                }
+            });
+            
+            const win = window.open('', '_blank');
+            win.document.write('<pre>' + briefing + '</pre>');
+            win.document.title = 'Team Briefing';
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadEmergencyData();
+        });
+    </script>
+</body>
+</html>

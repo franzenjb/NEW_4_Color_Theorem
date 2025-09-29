@@ -1,0 +1,49 @@
+{
+  "name": "Emergency Response Zones - Hurricane Response",
+  "description": "Red Cross disaster response zones for hurricane-affected regions. Adjacent zones cannot share the same response team (color).",
+  "type": "emergency",
+  "nodes": [
+    {"id": "Z1", "name": "Coastal Evacuation", "x": 150, "y": 200, "population": 45000, "priority": "critical"},
+    {"id": "Z2", "name": "Medical District", "x": 300, "y": 150, "population": 12000, "priority": "critical"},
+    {"id": "Z3", "name": "Downtown Shelters", "x": 450, "y": 200, "population": 28000, "priority": "high"},
+    {"id": "Z4", "name": "Industrial Zone", "x": 600, "y": 150, "population": 8000, "priority": "medium"},
+    {"id": "Z5", "name": "Residential North", "x": 300, "y": 300, "population": 35000, "priority": "high"},
+    {"id": "Z6", "name": "Residential South", "x": 450, "y": 350, "population": 31000, "priority": "high"},
+    {"id": "Z7", "name": "Airport District", "x": 600, "y": 300, "population": 5000, "priority": "critical"},
+    {"id": "Z8", "name": "Harbor Area", "x": 150, "y": 350, "population": 3000, "priority": "medium"},
+    {"id": "Z9", "name": "University Campus", "x": 750, "y": 200, "population": 22000, "priority": "medium"},
+    {"id": "Z10", "name": "Supply Distribution", "x": 450, "y": 500, "population": 2000, "priority": "critical"}
+  ],
+  "edges": [
+    {"source": "Z1", "target": "Z2", "type": "road", "capacity": "high"},
+    {"source": "Z1", "target": "Z5", "type": "road", "capacity": "high"},
+    {"source": "Z1", "target": "Z8", "type": "road", "capacity": "medium"},
+    {"source": "Z2", "target": "Z3", "type": "highway", "capacity": "high"},
+    {"source": "Z2", "target": "Z5", "type": "road", "capacity": "high"},
+    {"source": "Z3", "target": "Z4", "type": "highway", "capacity": "high"},
+    {"source": "Z3", "target": "Z5", "type": "road", "capacity": "medium"},
+    {"source": "Z3", "target": "Z6", "type": "road", "capacity": "high"},
+    {"source": "Z4", "target": "Z7", "type": "road", "capacity": "medium"},
+    {"source": "Z4", "target": "Z9", "type": "highway", "capacity": "high"},
+    {"source": "Z5", "target": "Z6", "type": "road", "capacity": "high"},
+    {"source": "Z5", "target": "Z8", "type": "road", "capacity": "low"},
+    {"source": "Z6", "target": "Z7", "type": "road", "capacity": "medium"},
+    {"source": "Z6", "target": "Z10", "type": "highway", "capacity": "high"},
+    {"source": "Z7", "target": "Z9", "type": "road", "capacity": "high"},
+    {"source": "Z8", "target": "Z10", "type": "road", "capacity": "low"},
+    {"source": "Z9", "target": "Z7", "type": "road", "capacity": "high"}
+  ],
+  "legend": {
+    "colors": {
+      "0": "Alpha Team - Search & Rescue",
+      "1": "Bravo Team - Medical Response",
+      "2": "Charlie Team - Shelter Management",
+      "3": "Delta Team - Supply Distribution"
+    },
+    "priorities": {
+      "critical": "Immediate response required",
+      "high": "Response within 2 hours",
+      "medium": "Response within 6 hours"
+    }
+  }
+}
