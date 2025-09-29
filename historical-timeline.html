@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Four Color Theorem - Interactive Historical Timeline</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #fff;
+            font-family: 'Georgia', serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .timeline-header {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .timeline-header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .timeline-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #ffd700, #ff6b6b);
+            transform: translateX(-50%);
+            z-index: 1;
+        }
+
+        .timeline-event {
+            display: flex;
+            margin-bottom: 4rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .timeline-event:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .timeline-content {
+            flex: 1;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            margin: 0 2rem;
+            position: relative;
+        }
+
+        .timeline-date {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #ff6b6b;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 24px;
+            font-weight: bold;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .timeline-event:nth-child(odd) .timeline-date {
+            right: -4rem;
+        }
+
+        .timeline-event:nth-child(even) .timeline-date {
+            left: -4rem;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            background: #ffd700;
+            border: 4px solid #fff;
+            border-radius: 50%;
+            z-index: 3;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .timeline-content h2 {
+            color: #2a5298;
+            margin-bottom: 1rem;
+            font-size: 1.75rem;
+        }
+
+        .proof-visualization {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .kempe-chain-demo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        .graph-container {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            position: relative;
+        }
+
+        .graph-svg {
+            width: 100%;
+            height: 300px;
+        }
+
+        .explanation-box {
+            background: #fff9e6;
+            border-left: 4px solid #ffd700;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .flaw-highlight {
+            background: #ffe6e6;
+            border-left: 4px solid #ff6b6b;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 4px;
+        }
+
+        .interactive-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 24px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0.5rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .interactive-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .document-preview {
+            max-width: 100%;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin: 1rem 0;
+            cursor: zoom-in;
+        }
+
+        .counties-map {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        #englandMap {
+            width: 100%;
+            height: 400px;
+        }
+
+        .heawood-counterexample {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .configuration-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .configuration-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .configuration-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .proof-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .computer-proof-visual {
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+
+        .proof-animation {
+            position: relative;
+            height: 300px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        @keyframes colorWave {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .color-wave {
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                #ff6b6b 0%, 
+                #4ecdc4 25%, 
+                #45b7d1 50%, 
+                #ffd700 75%, 
+                #ff6b6b 100%);
+            animation: colorWave 10s linear infinite;
+            opacity: 0.3;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+
+        .tab-navigation {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 1rem 2rem;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            color: #2a5298;
+            border-bottom-color: #2a5298;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <header class="timeline-header">
+        <h1>The Four Color Theorem</h1>
+        <p style="font-size: 1.25rem;">An Interactive Journey Through Mathematical History</p>
+        <p style="opacity: 0.8;">From a simple observation to the first computer-assisted proof</p>
+    </header>
+
+    <div class="timeline-container">
+        <div class="timeline-line"></div>
+
+        <!-- 1852: Francis Guthrie's Discovery -->
+        <div class="timeline-event">
+            <div class="timeline-marker"></div>
+            <div class="timeline-date">1852</div>
+            <div class="timeline-content">
+                <h2>Francis Guthrie's Original Observation</h2>
+                <p>While coloring a map of English counties, mathematics student Francis Guthrie noticed that he needed only four colors to ensure no adjacent counties shared the same color.</p>
+                
+                <div class="counties-map">
+                    <h3>Interactive: Color the English Counties</h3>
+                    <p>Try Guthrie's original problem yourself. Can you color this map with only 4 colors?</p>
+                    <svg id="englandMap" viewBox="0 0 400 500">
+                        <!-- Simplified English counties -->
+                        <g id="counties">
+                            <path id="kent" d="M 320 420 L 360 430 L 370 460 L 330 470 L 300 450 Z" fill="#fff" stroke="#333" stroke-width="2"/>
+                            <path id="sussex" d="M 250 450 L 300 450 L 330 470 L 280 480 L 230 470 Z" fill="#fff" stroke="#333" stroke-width="2"/>
+                            <path id="surrey" d="M 280 400 L 320 420 L 300 450 L 250 450 L 260 420 Z" fill="#fff" stroke="#333" stroke-width="2"/>
+                            <path id="hampshire" d="M 200 430 L 250 450 L 230 470 L 180 460 L 190 440 Z" fill="#fff" stroke="#333" stroke-width="2"/>
+                            <path id="berkshire" d="M 230 380 L 280 400 L 260 420 L 210 410 L 220 390 Z" fill="#fff" stroke="#333" stroke-width="2"/>
+                            <path id="oxfordshire" d="M 200 340 L 230 380 L 210 410 L 170 390 L 180 360 Z" fill="#fff" stroke="#333" stroke-width="2"/>
+                            <path id="buckinghamshire" d="M 240 340 L 280 360 L 280 400 L 230 380 L 240 340 Z" fill="#fff" stroke="#333" stroke-width="2"/>
+                            <path id="hertfordshire" d="M 280 320 L 320 340 L 280 360 L 240 340 L 260 320 Z" fill="#fff" stroke="#333" stroke-width="2"/>
+                            <path id="essex" d="M 320 340 L 360 360 L 360 430 L 320 420 L 280 400 L 280 360 Z" fill="#fff" stroke="#333" stroke-width="2"/>
+                            <path id="london" d="M 290 390 L 310 390 L 310 410 L 290 410 Z" fill="#fff" stroke="#333" stroke-width="3"/>
+                        </g>
+                        <text x="200" y="30" font-size="16" font-weight="bold" fill="#333">English Counties (Simplified)</text>
+                    </svg>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="interactive-button" onclick="colorCounty('red')">Red</button>
+                        <button class="interactive-button" onclick="colorCounty('blue')">Blue</button>
+                        <button class="interactive-button" onclick="colorCounty('green')">Green</button>
+                        <button class="interactive-button" onclick="colorCounty('yellow')">Yellow</button>
+                        <button class="interactive-button" onclick="resetMap()">Reset</button>
+                        <button class="interactive-button" onclick="autoColorMap()">Auto-Color</button>
+                    </div>
+                    <div id="coloringFeedback" style="margin-top: 1rem; padding: 1rem; background: #e8f5e9; border-radius: 4px; display: none;">
+                        <strong>✓ Valid coloring!</strong> You've successfully colored the map with 4 colors.
+                    </div>
+                </div>
+
+                <div class="explanation-box">
+                    <h3>Guthrie's Letter to De Morgan</h3>
+                    <p>"I have been attempting to colour a map... and have found that four colours are sufficient to distinguish between different districts... can it be proved that four colours are always sufficient?"</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1879: Kempe's "Proof" -->
+        <div class="timeline-event">
+            <div class="timeline-marker"></div>
+            <div class="timeline-date">1879</div>
+            <div class="timeline-content">
+                <h2>Alfred Kempe's Famous "Proof"</h2>
+                <p>Lawyer and mathematician Alfred Kempe published what was believed to be a valid proof in the American Journal of Mathematics.</p>
+                
+                <div class="proof-visualization">
+                    <h3>Kempe's Method: Chain Arguments</h3>
+                    <div class="kempe-chain-demo">
+                        <div class="graph-container">
+                            <svg class="graph-svg" id="kempeOriginal">
+                                <!-- Will be populated by JavaScript -->
+                            </svg>
+                            <p style="text-align: center; margin-top: 0.5rem;">Original Configuration</p>
+                        </div>
+                        <div class="graph-container">
+                            <svg class="graph-svg" id="kempeChain">
+                                <!-- Will be populated by JavaScript -->
+                            </svg>
+                            <p style="text-align: center; margin-top: 0.5rem;">After Kempe Chain Swap</p>
+                        </div>
+                    </div>
+                    <button class="interactive-button" onclick="animateKempeChain()">Animate Kempe Chain</button>
+                    <button class="interactive-button" onclick="showKempeFlaw()">Show Why It Fails</button>
+                </div>
+
+                <div class="explanation-box">
+                    <h3>Kempe's Approach</h3>
+                    <p>Kempe introduced the concept of "Kempe chains" - paths of alternating colors that could be swapped to reduce the number of colors needed. His proof attempted to show that any map could be reduced to simpler cases that obviously needed only 4 colors.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1890: Heawood Finds the Flaw -->
+        <div class="timeline-event">
+            <div class="timeline-marker"></div>
+            <div class="timeline-date">1890</div>
+            <div class="timeline-content">
+                <h2>Percy Heawood Exposes the Error</h2>
+                <p>After 11 years of acceptance, Percy John Heawood discovered a critical flaw in Kempe's proof.</p>
+                
+                <div class="heawood-counterexample">
+                    <div class="graph-container">
+                        <h3>The Heawood Counterexample</h3>
+                        <svg class="graph-svg" id="heawoodGraph">
+                            <!-- Heawood's 4-chromatic graph -->
+                        </svg>
+                        <button class="interactive-button" onclick="showHeawoodCounterexample()">Show Counterexample</button>
+                    </div>
+                    <div>
+                        <h3>The Fatal Flaw</h3>
+                        <div class="flaw-highlight">
+                            <p><strong>The Problem:</strong> Kempe assumed that when swapping colors in a chain, other chains would remain independent. Heawood showed this wasn't always true.</p>
+                            <p><strong>The Discovery:</strong> When you have a vertex of degree 5, Kempe chains can interfere with each other in ways Kempe didn't account for.</p>
+                        </div>
+                        <p>However, Heawood proved that Kempe's method <em>does</em> work for proving the Five Color Theorem!</p>
+                    </div>
+                </div>
+
+                <div class="proof-stats">
+                    <div class="stat-card">
+                        <span class="stat-number">11</span>
+                        <span class="stat-label">Years the proof stood</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">5</span>
+                        <span class="stat-label">Colors proven sufficient</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">86</span>
+                        <span class="stat-label">More years until solved</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1976: Computer-Assisted Proof -->
+        <div class="timeline-event">
+            <div class="timeline-marker"></div>
+            <div class="timeline-date">1976</div>
+            <div class="timeline-content">
+                <h2>Appel & Haken's Computer-Assisted Proof</h2>
+                <p>Kenneth Appel and Wolfgang Haken at the University of Illinois finally proved the theorem using computers—a first in mathematics.</p>
+                
+                <div class="proof-visualization">
+                    <h3>The Reducible Configurations</h3>
+                    <div class="configuration-grid">
+                        <div class="configuration-card">
+                            <svg width="100" height="100" viewBox="0 0 100 100">
+                                <!-- Configuration 1 -->
+                                <circle cx="50" cy="50" r="30" fill="#ff6b6b" stroke="#333" stroke-width="2"/>
+                                <text x="50" y="55" text-anchor="middle" font-size="12">Config 1</text>
+                            </svg>
+                            <p style="font-size: 0.875rem;">Digon</p>
+                        </div>
+                        <div class="configuration-card">
+                            <svg width="100" height="100" viewBox="0 0 100 100">
+                                <!-- Configuration 2 -->
+                                <polygon points="50,20 80,80 20,80" fill="#4ecdc4" stroke="#333" stroke-width="2"/>
+                                <text x="50" y="55" text-anchor="middle" font-size="12">Config 2</text>
+                            </svg>
+                            <p style="font-size: 0.875rem;">Triangle</p>
+                        </div>
+                        <div class="configuration-card">
+                            <svg width="100" height="100" viewBox="0 0 100 100">
+                                <!-- Configuration 3 -->
+                                <rect x="20" y="20" width="60" height="60" fill="#45b7d1" stroke="#333" stroke-width="2"/>
+                                <text x="50" y="55" text-anchor="middle" font-size="12">Config 3</text>
+                            </svg>
+                            <p style="font-size: 0.875rem;">Square</p>
+                        </div>
+                        <div class="configuration-card">
+                            <svg width="100" height="100" viewBox="0 0 100 100">
+                                <!-- Configuration 4 -->
+                                <polygon points="50,20 75,40 75,70 50,90 25,70 25,40" fill="#ffd700" stroke="#333" stroke-width="2"/>
+                                <text x="50" y="55" text-anchor="middle" font-size="12">Config 4</text>
+                            </svg>
+                            <p style="font-size: 0.875rem;">Pentagon</p>
+                        </div>
+                    </div>
+                    <p style="text-align: center; color: #666;">... and 1,932 more configurations</p>
+                </div>
+
+                <div class="computer-proof-visual">
+                    <pre>
+CHECKING CONFIGURATION 1247 OF 1936...
+================================================
+Vertices: 14  Edges: 38  Faces: 26
+Applying reduction rules...
+- Rule D: Discharge along edges... PASSED
+- Rule C: Check criticality... PASSED  
+- Rule R: Verify reducibility... PASSED
+Configuration 1247: REDUCIBLE ✓
+
+Total CPU Time: 1,200 hours
+Memory Used: 10 MB (enormous for 1976!)
+                    </pre>
+                </div>
+
+                <div class="proof-stats">
+                    <div class="stat-card">
+                        <span class="stat-number">1,936</span>
+                        <span class="stat-label">Configurations checked</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">1,200</span>
+                        <span class="stat-label">Hours of computer time</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">400+</span>
+                        <span class="stat-label">Pages of hand calculations</span>
+                    </div>
+                </div>
+
+                <div class="explanation-box">
+                    <h3>The Controversy</h3>
+                    <p>This proof was controversial because:</p>
+                    <ul>
+                        <li>No human could verify all 1,936 cases by hand</li>
+                        <li>The program itself might contain bugs</li>
+                        <li>It didn't provide intuitive understanding of <em>why</em> four colors suffice</li>
+                        <li>Many mathematicians felt a "real" proof should be human-verifiable</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1996: Simplified Proof -->
+        <div class="timeline-event">
+            <div class="timeline-marker"></div>
+            <div class="timeline-date">1996</div>
+            <div class="timeline-content">
+                <h2>Robertson, Sanders, Seymour & Thomas Simplification</h2>
+                <p>A team of four mathematicians created a cleaner proof with only 633 reducible configurations.</p>
+                
+                <div class="proof-visualization">
+                    <h3>Improvements Over 1976</h3>
+                    <div class="proof-stats">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);">
+                            <span class="stat-number">633</span>
+                            <span class="stat-label">Configurations (vs 1,936)</span>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);">
+                            <span class="stat-number">3</span>
+                            <span class="stat-label">Hours to verify (vs 1,200)</span>
+                        </div>
+                        <div class="stat-card" style="background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);">
+                            <span class="stat-number">32</span>
+                            <span class="stat-label">Discharging rules (vs 300+)</span>
+                        </div>
+                    </div>
+                    
+                    <p>Key improvements:</p>
+                    <ul>
+                        <li>Cleaner discharging procedure</li>
+                        <li>More efficient reducibility testing</li>
+                        <li>Publicly available code for verification</li>
+                        <li>Better documentation and explanation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2005: Formal Proof -->
+        <div class="timeline-event">
+            <div class="timeline-marker"></div>
+            <div class="timeline-date">2005</div>
+            <div class="timeline-content">
+                <h2>Georges Gonthier's Formal Verification</h2>
+                <p>Microsoft Research's Georges Gonthier created a fully formal proof verified by the Coq theorem prover.</p>
+                
+                <div class="computer-proof-visual">
+                    <pre style="color: #0f0;">
+Coq < Theorem four_color_theorem :
+        forall (G : planar_graph),
+        chromatic_number G <= 4.
+      
+Coq < Proof.
+        intros G.
+        apply reducibility_suffices.
+        - exact unavoidable_set_complete.
+        - exact all_configurations_reducible.
+        Qed.
+        
+four_color_theorem is defined
+                    </pre>
+                </div>
+
+                <div class="explanation-box">
+                    <h3>Why This Matters</h3>
+                    <p>The formal proof in Coq means:</p>
+                    <ul>
+                        <li>Every logical step is verified by machine</li>
+                        <li>No possibility of human error in the proof</li>
+                        <li>The proof is now "certified" correct</li>
+                        <li>Still doesn't provide intuitive understanding</li>
+                    </ul>
+                </div>
+
+                <button class="interactive-button" onclick="openProofExplorer()">Explore the Formal Proof</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for detailed exploration -->
+    <div id="proofModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+            <h2>Deep Dive: Understanding the Proofs</h2>
+            
+            <div class="tab-navigation">
+                <button class="tab-button active" onclick="showTab('kempe-tab')">Kempe's Method</button>
+                <button class="tab-button" onclick="showTab('heawood-tab')">Heawood's Counterexample</button>
+                <button class="tab-button" onclick="showTab('computer-tab')">Computer Proof</button>
+                <button class="tab-button" onclick="showTab('modern-tab')">Modern Understanding</button>
+            </div>
+
+            <div id="kempe-tab" class="tab-content active">
+                <h3>Kempe Chains Explained</h3>
+                <div class="proof-animation">
+                    <div class="color-wave"></div>
+                    <svg width="100%" height="300" id="kempeChainAnimation">
+                        <!-- Animated Kempe chain demonstration -->
+                    </svg>
+                </div>
+                <p>A Kempe chain is a maximal connected subgraph where vertices are colored with only two colors. The key insight: you can swap these two colors throughout the chain without affecting the validity of the coloring elsewhere.</p>
+            </div>
+
+            <div id="heawood-tab" class="tab-content">
+                <h3>Why Kempe Failed</h3>
+                <p>Heawood discovered that Kempe chains can interfere with each other in complex ways...</p>
+            </div>
+
+            <div id="computer-tab" class="tab-content">
+                <h3>The Computer Approach</h3>
+                <p>Instead of finding a general argument, Appel and Haken showed that every possible map must contain at least one of 1,936 special configurations...</p>
+            </div>
+
+            <div id="modern-tab" class="tab-content">
+                <h3>Current Understanding</h3>
+                <p>Today, we have multiple computer-verified proofs, but still lack a simple, intuitive explanation for why four colors suffice...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // County coloring functionality
+        let selectedColor = 'red';
+        let countyColors = {};
+
+        function colorCounty(color) {
+            selectedColor = color;
+            document.querySelectorAll('#counties path').forEach(county => {
+                county.style.cursor = 'pointer';
+                county.onclick = function() {
+                    this.style.fill = selectedColor;
+                    countyColors[this.id] = selectedColor;
+                    checkColoring();
+                };
+            });
+        }
+
+        function resetMap() {
+            document.querySelectorAll('#counties path').forEach(county => {
+                county.style.fill = '#fff';
+            });
+            countyColors = {};
+            document.getElementById('coloringFeedback').style.display = 'none';
+        }
+
+        function autoColorMap() {
+            const counties = document.querySelectorAll('#counties path');
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#ffd700'];
+            
+            // Simple greedy coloring
+            const adjacency = {
+                'kent': ['sussex', 'surrey', 'essex'],
+                'sussex': ['kent', 'surrey', 'hampshire'],
+                'surrey': ['kent', 'sussex', 'hampshire', 'berkshire', 'buckinghamshire', 'hertfordshire', 'essex', 'london'],
+                'hampshire': ['sussex', 'surrey', 'berkshire'],
+                'berkshire': ['hampshire', 'surrey', 'oxfordshire', 'buckinghamshire'],
+                'oxfordshire': ['berkshire', 'buckinghamshire'],
+                'buckinghamshire': ['berkshire', 'oxfordshire', 'hertfordshire', 'surrey'],
+                'hertfordshire': ['buckinghamshire', 'essex', 'surrey'],
+                'essex': ['hertfordshire', 'surrey', 'kent', 'london'],
+                'london': ['surrey', 'essex']
+            };
+
+            counties.forEach(county => {
+                const neighbors = adjacency[county.id] || [];
+                const neighborColors = neighbors.map(n => countyColors[n]).filter(c => c);
+                
+                for (let color of colors) {
+                    if (!neighborColors.includes(color)) {
+                        county.style.fill = color;
+                        countyColors[county.id] = color;
+                        break;
+                    }
+                }
+            });
+            
+            checkColoring();
+        }
+
+        function checkColoring() {
+            const allColored = document.querySelectorAll('#counties path').length === Object.keys(countyColors).length;
+            if (allColored) {
+                const colors = new Set(Object.values(countyColors));
+                if (colors.size <= 4) {
+                    document.getElementById('coloringFeedback').style.display = 'block';
+                }
+            }
+        }
+
+        // Kempe chain visualization
+        function drawKempeGraph() {
+            const svg = document.getElementById('kempeOriginal');
+            
+            // Draw a simple graph
+            const nodes = [
+                {x: 100, y: 50, color: '#ff6b6b'},
+                {x: 200, y: 50, color: '#4ecdc4'},
+                {x: 150, y: 150, color: '#ffd700'},
+                {x: 50, y: 150, color: '#4ecdc4'},
+                {x: 250, y: 150, color: '#ff6b6b'}
+            ];
+            
+            const edges = [
+                [0, 1], [0, 3], [1, 2], [1, 4], [2, 3], [2, 4], [3, 4]
+            ];
+            
+            // Draw edges
+            edges.forEach(([i, j]) => {
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', nodes[i].x);
+                line.setAttribute('y1', nodes[i].y);
+                line.setAttribute('x2', nodes[j].x);
+                line.setAttribute('y2', nodes[j].y);
+                line.setAttribute('stroke', '#333');
+                line.setAttribute('stroke-width', '2');
+                svg.appendChild(line);
+            });
+            
+            // Draw nodes
+            nodes.forEach((node, i) => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', node.x);
+                circle.setAttribute('cy', node.y);
+                circle.setAttribute('r', '20');
+                circle.setAttribute('fill', node.color);
+                circle.setAttribute('stroke', '#333');
+                circle.setAttribute('stroke-width', '2');
+                svg.appendChild(circle);
+                
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', node.x);
+                text.setAttribute('y', node.y + 5);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('fill', 'white');
+                text.setAttribute('font-weight', 'bold');
+                text.textContent = String(i + 1);
+                svg.appendChild(text);
+            });
+        }
+
+        function animateKempeChain() {
+            const svg = document.getElementById('kempeChain');
+            svg.innerHTML = '';
+            
+            // Show the Kempe chain swap animation
+            const nodes = [
+                {x: 100, y: 50, color: '#4ecdc4', newColor: '#ff6b6b'},
+                {x: 200, y: 50, color: '#ff6b6b', newColor: '#4ecdc4'},
+                {x: 150, y: 150, color: '#ffd700', newColor: '#ffd700'},
+                {x: 50, y: 150, color: '#ff6b6b', newColor: '#4ecdc4'},
+                {x: 250, y: 150, color: '#4ecdc4', newColor: '#ff6b6b'}
+            ];
+            
+            const edges = [
+                [0, 1], [0, 3], [1, 2], [1, 4], [2, 3], [2, 4], [3, 4]
+            ];
+            
+            // Draw edges with animation
+            edges.forEach(([i, j], index) => {
+                setTimeout(() => {
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', nodes[i].x);
+                    line.setAttribute('y1', nodes[i].y);
+                    line.setAttribute('x2', nodes[j].x);
+                    line.setAttribute('y2', nodes[j].y);
+                    line.setAttribute('stroke', '#333');
+                    line.setAttribute('stroke-width', '2');
+                    line.style.opacity = '0';
+                    svg.appendChild(line);
+                    
+                    // Fade in
+                    setTimeout(() => {
+                        line.style.transition = 'opacity 0.5s';
+                        line.style.opacity = '1';
+                    }, 10);
+                }, index * 100);
+            });
+            
+            // Draw nodes with color transition
+            setTimeout(() => {
+                nodes.forEach((node, i) => {
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', node.x);
+                    circle.setAttribute('cy', node.y);
+                    circle.setAttribute('r', '20');
+                    circle.setAttribute('fill', node.color);
+                    circle.setAttribute('stroke', '#333');
+                    circle.setAttribute('stroke-width', '2');
+                    circle.style.transition = 'fill 1s';
+                    svg.appendChild(circle);
+                    
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    text.setAttribute('x', node.x);
+                    text.setAttribute('y', node.y + 5);
+                    text.setAttribute('text-anchor', 'middle');
+                    text.setAttribute('fill', 'white');
+                    text.setAttribute('font-weight', 'bold');
+                    text.textContent = String(i + 1);
+                    svg.appendChild(text);
+                    
+                    // Animate color change
+                    setTimeout(() => {
+                        circle.setAttribute('fill', node.newColor);
+                    }, 1500);
+                });
+            }, edges.length * 100);
+        }
+
+        function showKempeFlaw() {
+            const modal = document.getElementById('proofModal');
+            modal.style.display = 'block';
+            showTab('kempe-tab');
+        }
+
+        function showHeawoodCounterexample() {
+            // Show Heawood's specific counterexample
+            const svg = document.getElementById('heawoodGraph');
+            svg.innerHTML = '';
+            
+            // Draw the Heawood graph (complete graph K5)
+            const n = 5;
+            const radius = 100;
+            const centerX = 150;
+            const centerY = 150;
+            
+            const nodes = [];
+            for (let i = 0; i < n; i++) {
+                const angle = (2 * Math.PI * i) / n - Math.PI / 2;
+                nodes.push({
+                    x: centerX + radius * Math.cos(angle),
+                    y: centerY + radius * Math.sin(angle)
+                });
+            }
+            
+            // Draw all edges (complete graph)
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', nodes[i].x);
+                    line.setAttribute('y1', nodes[i].y);
+                    line.setAttribute('x2', nodes[j].x);
+                    line.setAttribute('y2', nodes[j].y);
+                    line.setAttribute('stroke', '#333');
+                    line.setAttribute('stroke-width', '2');
+                    svg.appendChild(line);
+                }
+            }
+            
+            // Draw nodes
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#ffd700', '#90EE90'];
+            nodes.forEach((node, i) => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', node.x);
+                circle.setAttribute('cy', node.y);
+                circle.setAttribute('r', '25');
+                circle.setAttribute('fill', colors[i]);
+                circle.setAttribute('stroke', '#333');
+                circle.setAttribute('stroke-width', '3');
+                svg.appendChild(circle);
+                
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', node.x);
+                text.setAttribute('y', node.y + 5);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('font-size', '16');
+                text.setAttribute('font-weight', 'bold');
+                text.setAttribute('fill', '#333');
+                text.textContent = String(i + 1);
+                svg.appendChild(text);
+            });
+            
+            // Add explanation text
+            const explanation = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            explanation.setAttribute('x', 150);
+            explanation.setAttribute('y', 280);
+            explanation.setAttribute('text-anchor', 'middle');
+            explanation.setAttribute('font-size', '14');
+            explanation.textContent = 'K5: Requires 5 colors (not planar)';
+            svg.appendChild(explanation);
+        }
+
+        function openProofExplorer() {
+            document.getElementById('proofModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('proofModal').style.display = 'none';
+        }
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            drawKempeGraph();
+            colorCounty('red'); // Set initial color mode
+        });
+    </script>
+</body>
+</html>
